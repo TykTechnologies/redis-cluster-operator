@@ -81,3 +81,7 @@ vendor/*
 /Dockerfile-withvendor
 Dockerfile-TZSH
 skaffold.yaml
+
+bin/
+
+coverage.txt

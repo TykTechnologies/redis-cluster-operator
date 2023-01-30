@@ -3,27 +3,31 @@ module github.com/ucloud/redis-cluster-operator
 require (
 	github.com/appscode/go v0.0.0-20191006073906-e3d193d493fc
 	github.com/appscode/osm v0.12.0
-	github.com/aws/aws-sdk-go v1.20.20
+	github.com/aws/aws-sdk-go v1.25.48
+	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
 	github.com/go-logr/logr v0.1.0
-	github.com/go-openapi/spec v0.19.2
+	github.com/go-openapi/jsonreference v0.19.3 // indirect
+	github.com/go-openapi/spec v0.19.4
 	github.com/go-redis/redis v6.15.7+incompatible
+	github.com/imdario/mergo v0.3.8 // indirect
+	github.com/mailru/easyjson v0.7.0 // indirect
 	github.com/mediocregopher/radix.v2 v0.0.0-20181115013041-b67df6e626f9
-	github.com/onsi/ginkgo v1.8.0
-	github.com/onsi/gomega v1.5.0
-	github.com/operator-framework/operator-sdk v0.13.0
-	github.com/pkg/errors v0.8.1
+	github.com/onsi/ginkgo v1.11.0
+	github.com/onsi/gomega v1.8.1
+	github.com/operator-framework/operator-sdk v0.17.2
+	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	gomodules.xyz/stow v0.2.3
-	k8s.io/api v0.0.0
-	k8s.io/apimachinery v0.0.0
+	k8s.io/api v0.17.4
+	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d
+	k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
 	k8s.io/kubernetes v1.16.2
 	kmodules.xyz/constants v0.0.0-20191024095500-cd4313df4aa6
 	kmodules.xyz/objectstore-api v0.0.0-20191014210450-ac380fa650a3
-	sigs.k8s.io/controller-runtime v0.4.0
+	sigs.k8s.io/controller-runtime v0.5.2
 )
 
 // Pinned to kubernetes-1.16.2
@@ -53,7 +57,9 @@ replace (
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.1+incompatible
+	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 	github.com/go-check/check => github.com/go-check/check v0.0.0-20180628173108-788fd7840127
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20190924102528-32369d4db2ad
 )
 
 go 1.13

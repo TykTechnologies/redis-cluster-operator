@@ -16,7 +16,6 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
-	"github.com/operator-framework/operator-sdk/pkg/restmapper"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
 	v1 "k8s.io/api/core/v1"
@@ -105,7 +104,6 @@ func main() {
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:          namespace,
-		MapperProvider:     restmapper.NewDynamicRESTMapper,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 	})
 	if err != nil {
@@ -189,8 +187,14 @@ func serveCRMetrics(cfg *rest.Config) error {
 	if err != nil {
 		return err
 	}
-	// To generate metrics in other namespaces, add the values below.
-	ns := []string{operatorNs}
+
+	// The metrics will be generated from the namespaces which are returned here.
+	// NOTE that passing nil or an empty list of namespaces in GenerateAndServeCRMetrics will result in an error.
+	ns, err := kubemetrics.GetNamespacesForMetrics(operatorNs)
+	if err != nil {
+		return err
+	}
+
 	// Generate and serve custom resource specific metrics.
 	err = kubemetrics.GenerateAndServeCRMetrics(cfg, ns, filteredGVK, metricsHost, operatorMetricsPort)
 	if err != nil {
