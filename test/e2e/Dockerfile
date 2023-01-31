@@ -1,11 +1,11 @@
-ARG GOLANG_VERSION=1.13.3
+ARG GOLANG_VERSION=1.18.10
 FROM golang:${GOLANG_VERSION}
 
 ENV GOLANG_VERSION=${GOLANG_VERSION}
 
 RUN apt update && apt install -y git
 
-RUN go get -u github.com/onsi/ginkgo/ginkgo github.com/onsi/gomega/...
+RUN go install github.com/onsi/ginkgo/ginkgo@latest github.com/onsi/gomega/...@latest
 
 ARG PROJECT_NAME=redis-cluster-operator
 ARG REPO_PATH=github.com/ucloud/$PROJECT_NAME
