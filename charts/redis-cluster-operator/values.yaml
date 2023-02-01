@@ -3,8 +3,8 @@ operator:
   name: "redis-cluster-operator"
   replicas: 1
   service_account_name: "redis-cluster-operator"
-  namespace: ""  # keep this value "" if you want to deploy cluster-wide operator
-  image_source: "abhishiekgowtham/redis-cluster-operator"
+  namespace: "" # keep this value "" if you want to deploy cluster-wide operator
+  image_source: "tykio/redis-cluster-operator"
   image_tag: "latest"
   imagePullPolicy: "Always"
   resources:

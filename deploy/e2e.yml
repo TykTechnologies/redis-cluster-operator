@@ -15,7 +15,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: e2e
-          image: abhishiekgowtham/redis-cluster-operator-e2e:list-2-dirty
+          image: tykio/redis-cluster-operator-e2e:latest
           imagePullPolicy: Always
           env:
             - name: TEST_TIMEOUT
