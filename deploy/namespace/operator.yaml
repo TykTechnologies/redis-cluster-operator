@@ -16,7 +16,7 @@ spec:
       containers:
         - name: redis-cluster-operator
           # Replace this with the built image name
-          image: fishu/redis-cluster-operator:latest
+          image: tykio/redis-cluster-operator:latest
           command:
             - redis-cluster-operator
           args:

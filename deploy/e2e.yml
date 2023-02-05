@@ -15,7 +15,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: e2e
-          image: fishu/redis-cluster-operator-e2e
+          image: tykio/redis-cluster-operator-e2e:latest
           imagePullPolicy: Always
           env:
             - name: TEST_TIMEOUT
@@ -119,7 +119,7 @@ rules:
   - apiGroups:
       - redis.kun
     resources:
-      - '*'
+      - "*"
     verbs:
       - create
       - delete
