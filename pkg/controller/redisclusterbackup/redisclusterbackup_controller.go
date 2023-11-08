@@ -75,13 +75,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	pred := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			// returns false if DistributedRedisCluster is ignored (not managed) by this operator.
-			if !utils.ShoudManage(e.MetaNew) {
+			if !utils.ShoudManage(e.ObjectNew.GetAnnotations()) {
 				return false
 			}
-			log.WithValues("namespace", e.MetaNew.GetNamespace(), "name", e.MetaNew.GetName()).V(5).Info("Call UpdateFunc")
+			log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).V(5).Info("Call UpdateFunc")
 			// Ignore updates to CR status in which case metadata.Generation does not change
-			if e.MetaOld.GetGeneration() != e.MetaNew.GetGeneration() {
-				log.WithValues("namespace", e.MetaNew.GetNamespace(), "name", e.MetaNew.GetName()).Info("Generation change return true",
+			if e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration() {
+				log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).Info("Generation change return true",
 					"old", e.ObjectOld, "new", e.ObjectNew)
 				return true
 			}
@@ -89,19 +89,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
 			// returns false if DistributedRedisCluster is ignored (not managed) by this operator.
-			if !utils.ShoudManage(e.Meta) {
+			if !utils.ShoudManage(e.Object.GetAnnotations()) {
 				return false
 			}
-			log.WithValues("namespace", e.Meta.GetNamespace(), "name", e.Meta.GetName()).Info("Call DeleteFunc")
+			log.WithValues("namespace", e.Object.GetNamespace(), "name", e.Object.GetName()).Info("Call DeleteFunc")
 			// Evaluates to false if the object has been confirmed deleted.
 			return !e.DeleteStateUnknown
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
 			// returns false if DistributedRedisCluster is ignored (not managed) by this operator.
-			if !utils.ShoudManage(e.Meta) {
+			if !utils.ShoudManage(e.Object.GetAnnotations()) {
 				return false
 			}
-			log.WithValues("namespace", e.Meta.GetNamespace(), "name", e.Meta.GetName()).Info("Call CreateFunc")
+			log.WithValues("namespace", e.Object.GetNamespace(), "name", e.Object.GetName()).Info("Call CreateFunc")
 			return true
 		},
 	}
@@ -114,9 +114,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	jobPred := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			log.WithValues("namespace", e.MetaNew.GetNamespace(), "name", e.MetaNew.GetName()).V(4).Info("Call Job UpdateFunc")
-			if !utils.ShoudManage(e.MetaNew) {
-				log.WithValues("namespace", e.MetaNew.GetNamespace(), "name", e.MetaNew.GetName()).V(4).Info("Job UpdateFunc Not Manage")
+			log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).V(4).Info("Call Job UpdateFunc")
+			if !utils.ShoudManage(e.ObjectNew.GetAnnotations()) {
+				log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).V(4).Info("Job UpdateFunc Not Manage")
 				return false
 			}
 			newObj := e.ObjectNew.(*batch.Job)
@@ -126,7 +126,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			return false
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			if !utils.ShoudManage(e.Meta) {
+			if !utils.ShoudManage(e.Object.GetAnnotations()) {
 				return false
 			}
 			job, ok := e.Object.(*batch.Job)
@@ -140,9 +140,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			return false
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
-			log.WithValues("namespace", e.Meta.GetNamespace(), "name", e.Meta.GetName()).V(4).Info("Call Job CreateFunc")
-			if !utils.ShoudManage(e.Meta) {
-				log.WithValues("namespace", e.Meta.GetNamespace(), "name", e.Meta.GetName()).V(4).Info("Job CreateFunc Not Manage")
+			log.WithValues("namespace", e.Object.GetNamespace(), "name", e.Object.GetName()).V(4).Info("Call Job CreateFunc")
+			if !utils.ShoudManage(e.Object.GetAnnotations()) {
+				log.WithValues("namespace", e.Object.GetNamespace(), "name", e.Object.GetName()).V(4).Info("Job CreateFunc Not Manage")
 				return false
 			}
 			job := e.Object.(*batch.Job)
@@ -188,7 +188,7 @@ type ReconcileRedisClusterBackup struct {
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
-func (r *ReconcileRedisClusterBackup) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileRedisClusterBackup) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling RedisClusterBackup")
 

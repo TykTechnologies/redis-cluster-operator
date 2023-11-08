@@ -91,10 +91,7 @@ func (c *Ctx) PlaceMasters(ssName string) *redisutil.Node {
 	nodes := c.nodes[ssName]
 	for _, cNode := range nodes {
 		_, err := allMasters.GetNodesByFunc(func(node *redisutil.Node) bool {
-			if node.NodeName == cNode.NodeName {
-				return true
-			}
-			return false
+			return node.NodeName == cNode.NodeName
 		})
 		if err != nil {
 			return cNode

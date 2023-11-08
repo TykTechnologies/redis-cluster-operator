@@ -1,9 +1,5 @@
 package utils
 
-import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
 const (
 	// AnnotationScope annotation name for defining instance scope. Used for specifying cluster wide clusters.
 	// A namespace-scoped operator watches and manages resources in a single namespace, whereas a cluster-scoped operator watches and manages resources cluster-wide.
@@ -24,8 +20,8 @@ func SetClusterScoped(namespace string) {
 	}
 }
 
-func ShoudManage(meta metav1.Object) bool {
-	if v, ok := meta.GetAnnotations()[AnnotationScope]; ok {
+func ShoudManage(annotations map[string]string) bool {
+	if v, ok := annotations[AnnotationScope]; ok {
 		if IsClusterScoped() {
 			return v == AnnotationClusterScoped
 		}
