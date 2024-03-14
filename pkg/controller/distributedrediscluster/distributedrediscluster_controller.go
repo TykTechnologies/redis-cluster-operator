@@ -66,7 +66,7 @@ func Add(mgr manager.Manager) error {
 		Version: "v1",
 		Kind:    "Pod",
 	}
-	restClient, err := apiutil.RESTClientForGVK(gvk, mgr.GetConfig(), serializer.NewCodecFactory(scheme.Scheme))
+	restClient, err := apiutil.RESTClientForGVK(gvk, false, mgr.GetConfig(), serializer.NewCodecFactory(scheme.Scheme))
 	if err != nil {
 		return err
 	}
@@ -103,13 +103,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	pred := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			// returns false if DistributedRedisCluster is ignored (not managed) by this operator.
-			if !utils.ShoudManage(e.MetaNew) {
+			if !utils.ShoudManage(e.ObjectNew.GetAnnotations()) {
 				return false
 			}
-			log.WithValues("namespace", e.MetaNew.GetNamespace(), "name", e.MetaNew.GetName()).V(5).Info("Call UpdateFunc")
+			log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).V(5).Info("Call UpdateFunc")
 			// Ignore updates to CR status in which case metadata.Generation does not change
-			if e.MetaOld.GetGeneration() != e.MetaNew.GetGeneration() {
-				log.WithValues("namespace", e.MetaNew.GetNamespace(), "name", e.MetaNew.GetName()).Info("Generation change return true",
+			if e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration() {
+				log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).Info("Generation change return true",
 					"old", e.ObjectOld, "new", e.ObjectNew)
 				return true
 			}
@@ -117,19 +117,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
 			// returns false if DistributedRedisCluster is ignored (not managed) by this operator.
-			if !utils.ShoudManage(e.Meta) {
+			if !utils.ShoudManage(e.Object.GetAnnotations()) {
 				return false
 			}
-			log.WithValues("namespace", e.Meta.GetNamespace(), "name", e.Meta.GetName()).Info("Call DeleteFunc")
+			log.WithValues("namespace", e.Object.GetNamespace(), "name", e.Object.GetName()).Info("Call DeleteFunc")
 			// Evaluates to false if the object has been confirmed deleted.
 			return !e.DeleteStateUnknown
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
 			// returns false if DistributedRedisCluster is ignored (not managed) by this operator.
-			if !utils.ShoudManage(e.Meta) {
+			if !utils.ShoudManage(e.Object.GetAnnotations()) {
 				return false
 			}
-			log.WithValues("namespace", e.Meta.GetNamespace(), "name", e.Meta.GetName()).Info("Call CreateFunc")
+			log.WithValues("namespace", e.Object.GetNamespace(), "name", e.Object.GetName()).Info("Call CreateFunc")
 			return true
 		},
 	}
@@ -167,7 +167,7 @@ type ReconcileDistributedRedisCluster struct {
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
-func (r *ReconcileDistributedRedisCluster) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileDistributedRedisCluster) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling DistributedRedisCluster")
 
@@ -318,7 +318,10 @@ func (r *ReconcileDistributedRedisCluster) Reconcile(request reconcile.Request) 
 		SetClusterRebalancing(status, "scaling down")
 	}
 	reqLogger.V(4).Info("buildClusterStatus", "status", status)
-	r.updateClusterIfNeed(instance, status, reqLogger)
+	err = r.updateClusterIfNeed(instance, status, reqLogger)
+	if err != nil {
+		reqLogger.Error(err, "problem with update status")
+	}
 
 	instance.Status = *status
 	if needClusterOperation(instance, reqLogger) {
@@ -327,7 +330,10 @@ func (r *ReconcileDistributedRedisCluster) Reconcile(request reconcile.Request) 
 		if err != nil {
 			newStatus := instance.Status.DeepCopy()
 			SetClusterFailed(newStatus, err.Error())
-			r.updateClusterIfNeed(instance, newStatus, reqLogger)
+			err = r.updateClusterIfNeed(instance, newStatus, reqLogger)
+			if err != nil {
+				reqLogger.Error(err, "problem with update cluster")
+			}
 			return reconcile.Result{}, err
 		}
 	}
