@@ -21,6 +21,9 @@ import (
 	"flag"
 	"os"
 
+	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/distributedrediscluster"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/redisclusterbackup"
+
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -36,7 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -126,7 +128,7 @@ func main() {
 		WebhookServer:          webhookServer,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "afedc442.kun",
+		LeaderElectionID:       "afedc442.tyk.io",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
@@ -144,20 +146,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.DistributedRedisClusterReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "DistributedRedisCluster")
+	distributedredisclusterreconciler, err := distributedrediscluster.NewDistributedRedisClusterReconciler(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create DistributedRedisCluster reconciler")
 		os.Exit(1)
 	}
-	if err = (&controller.RedisClusterBackupReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "RedisClusterBackup")
+	if err = distributedredisclusterreconciler.SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to set up controller", "controller", "DistributedRedisCluster")
 		os.Exit(1)
 	}
+
+	redisclusterbackupreconciler := redisclusterbackup.NewReconcileRedisClusterBackup(mgr)
+	if err = redisclusterbackupreconciler.SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to set up controller", "controller", "RedisClusterBackup")
+		os.Exit(1)
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
