@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
-  name: redisclusterbackups.redis.tyk.io
+  name: redisclusterbackups.redis.kun
 spec:
-  group: redis.tyk.io
+  group: redis.kun
   names:
     kind: RedisClusterBackup
     listKind: RedisClusterBackupList

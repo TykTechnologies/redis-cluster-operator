@@ -18,6 +18,8 @@ package distributedrediscluster
 
 import (
 	"context"
+	"time"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 	internalController "github.com/TykTechnologies/redis-cluster-operator/internal/controller"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/exec"
@@ -38,7 +40,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -103,9 +104,9 @@ func NewDistributedRedisClusterReconciler(mgr ctrl.Manager) (*DistributedRedisCl
 	}, nil
 }
 
-// +kubebuilder:rbac:groups=redis.tyk.io,resources=distributedredisclusters,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=redis.tyk.io,resources=distributedredisclusters/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=redis.tyk.io,resources=distributedredisclusters/finalizers,verbs=update
+// +kubebuilder:rbac:groups=redis.kun,resources=distributedredisclusters,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=redis.kun,resources=distributedredisclusters/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=redis.kun,resources=distributedredisclusters/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

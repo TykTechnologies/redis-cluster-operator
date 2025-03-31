@@ -78,7 +78,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - redis.tyk.io
+  - redis.kun
   resources:
   - distributedredisclusters
   - redisclusterbackups
@@ -91,14 +91,14 @@ rules:
   - update
   - watch
 - apiGroups:
-  - redis.tyk.io
+  - redis.kun
   resources:
   - distributedredisclusters/finalizers
   - redisclusterbackups/finalizers
   verbs:
   - update
 - apiGroups:
-  - redis.tyk.io
+  - redis.kun
   resources:
   - distributedredisclusters/status
   - redisclusterbackups/status

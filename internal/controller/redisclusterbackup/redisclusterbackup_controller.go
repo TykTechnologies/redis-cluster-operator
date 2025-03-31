@@ -18,6 +18,7 @@ package redisclusterbackup
 
 import (
 	"context"
+
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
@@ -34,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-const backupFinalizer = "finalizer.backup.redis.tyk.io"
+const backupFinalizer = "finalizer.backup.redis.kun"
 
 // RedisClusterBackupReconciler reconciles a RedisClusterBackup object
 type RedisClusterBackupReconciler struct {
@@ -61,9 +62,9 @@ func NewReconcileRedisClusterBackup(mgr ctrl.Manager) *RedisClusterBackupReconci
 	}
 }
 
-// +kubebuilder:rbac:groups=redis.tyk.io,resources=redisclusterbackups,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=redis.tyk.io,resources=redisclusterbackups/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=redis.tyk.io,resources=redisclusterbackups/finalizers,verbs=update
+// +kubebuilder:rbac:groups=redis.kun,resources=redisclusterbackups,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=redis.kun,resources=redisclusterbackups/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=redis.kun,resources=redisclusterbackups/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

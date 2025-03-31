@@ -75,7 +75,7 @@ const (
 const (
 	DatabaseNamePrefix = "redis"
 
-	GenericKey = "redis.tyk.io"
+	GenericKey = "redis.kun"
 
 	LabelClusterName = GenericKey + "/name"
 
