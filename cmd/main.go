@@ -23,6 +23,7 @@ import (
 
 	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/distributedrediscluster"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/redisclusterbackup"
+	"github.com/spf13/pflag"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -37,6 +38,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
@@ -75,7 +78,13 @@ func main() {
 		Development: true,
 	}
 	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
+
+	// Add the standard library flag set into pflag's CommandLine.
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+
+	config.RedisConf().AddFlags(pflag.CommandLine)
+
+	pflag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
