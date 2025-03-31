@@ -1,0 +1,5 @@
+## Append samples of your project ##
+resources:
+- redis_v1alpha1_distributedrediscluster.yaml
+- redis_v1alpha1_redisclusterbackup.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
