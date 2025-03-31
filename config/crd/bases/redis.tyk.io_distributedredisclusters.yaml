@@ -11,6 +11,8 @@ spec:
     kind: DistributedRedisCluster
     listKind: DistributedRedisClusterList
     plural: distributedredisclusters
+    shortNames:
+    - drc
     singular: distributedrediscluster
   scope: Namespaced
   versions:

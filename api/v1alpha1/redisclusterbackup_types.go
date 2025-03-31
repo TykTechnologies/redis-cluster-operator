@@ -178,6 +178,7 @@ type RedisClusterBackupStatus struct {
 	ClusterImage    string       `json:"clusterImage,omitempty"`
 }
 
+//+kubebuilder:resource:shortName="drcb"
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=redisclusterbackups,scope=Namespaced

@@ -153,6 +153,7 @@ type RedisClusterNode struct {
 	StatefulSet string    `json:"statefulSet"`
 }
 
+//+kubebuilder:resource:shortName="drc"
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;delete;patch
