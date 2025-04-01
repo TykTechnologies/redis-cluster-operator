@@ -31,11 +31,11 @@ const namespace = "redis-cluster-operator-old-system"
 
 var _ = Describe("controller", Ordered, func() {
 	BeforeAll(func() {
-		By("installing prometheus operator")
-		Expect(utils.InstallPrometheusOperator()).To(Succeed())
-
-		By("installing the cert-manager")
-		Expect(utils.InstallCertManager()).To(Succeed())
+		//By("installing prometheus operator")
+		//Expect(utils.InstallPrometheusOperator()).To(Succeed())
+		//
+		//By("installing the cert-manager")
+		//Expect(utils.InstallCertManager()).To(Succeed())
 
 		By("creating manager namespace")
 		cmd := exec.Command("kubectl", "create", "ns", namespace)
@@ -43,11 +43,11 @@ var _ = Describe("controller", Ordered, func() {
 	})
 
 	AfterAll(func() {
-		By("uninstalling the Prometheus manager bundle")
-		utils.UninstallPrometheusOperator()
-
-		By("uninstalling the cert-manager bundle")
-		utils.UninstallCertManager()
+		//By("uninstalling the Prometheus manager bundle")
+		//utils.UninstallPrometheusOperator()
+		//
+		//By("uninstalling the cert-manager bundle")
+		//utils.UninstallCertManager()
 
 		By("removing manager namespace")
 		cmd := exec.Command("kubectl", "delete", "ns", namespace)
@@ -60,19 +60,19 @@ var _ = Describe("controller", Ordered, func() {
 			var err error
 
 			// projectimage stores the name of the image used in the example
-			var projectimage = "example.com/redis-cluster-operator-old:v0.0.1"
+			var projectimage = "amiralh/redis-cluster-operator:v0.0.9"
 
-			By("building the manager(Operator) image")
-			cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
-			_, err = utils.Run(cmd)
-			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+			//By("building the manager(Operator) image")
+			//cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
+			//_, err = utils.Run(cmd)
+			//ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 			By("loading the the manager(Operator) image on Kind")
-			err = utils.LoadImageToKindClusterWithName(projectimage)
+			err = utils.LoadImageToKindClusterWithName(projectimage, "test")
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 			By("installing CRDs")
-			cmd = exec.Command("make", "install")
+			cmd := exec.Command("make", "install")
 			_, err = utils.Run(cmd)
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
