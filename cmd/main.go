@@ -21,8 +21,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/distributedrediscluster"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/redisclusterbackup"
+	"github.com/TykTechnologies/redis-cluster-operator/pkg/controller/distributedrediscluster"
+	"github.com/TykTechnologies/redis-cluster-operator/pkg/controller/redisclusterbackup"
 	"github.com/spf13/pflag"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -39,7 +39,7 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
+	"github.com/TykTechnologies/redis-cluster-operator/pkg/config"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
@@ -73,7 +73,7 @@ func main() {
 	flag.BoolVar(&secureMetrics, "metrics-secure", true,
 		`Specifies whether the metrics endpoint should be served securely over HTTPS. When set to true (default),
 		 the endpoint is encrypted and may include additional security features like client authentication.
-		  Set to false to serve the endpoint over HTTP, bypassing encryption and security measures (not recommended for production).`)	
+		  Set to false to serve the endpoint over HTTP, bypassing encryption and security measures (not recommended for production).`)
 	flag.BoolVar(&enableHTTP2, "enable-http2", false,
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
 	opts := zap.Options{

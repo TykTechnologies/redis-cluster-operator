@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: amiralh/redis-cluster-operator
-  newTag: v0.0.9
+  newTag: v0.0.19
