@@ -2,9 +2,10 @@ package heal
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-	"time"
 
 	"k8s.io/apimachinery/pkg/util/errors"
 

@@ -2,12 +2,13 @@ package statefulsets
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/osm"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/configmaps"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
-	"sort"
-	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

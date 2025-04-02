@@ -2,9 +2,10 @@ package clustering
 
 import (
 	"fmt"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"math"
 	"sort"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 

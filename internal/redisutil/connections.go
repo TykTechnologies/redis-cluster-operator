@@ -3,11 +3,12 @@ package redisutil
 import (
 	"errors"
 	"fmt"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 	"math/rand"
 	"net"
 	"os"
 	"time"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 
 	"github.com/go-logr/logr"
 	"github.com/mediocregopher/radix.v2/redis"

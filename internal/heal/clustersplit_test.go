@@ -1,8 +1,9 @@
 package heal
 
 import (
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"testing"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 )
 
 func Test_buildClustersLists(t *testing.T) {

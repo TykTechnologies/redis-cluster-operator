@@ -2,6 +2,7 @@ package clustering
 
 import (
 	"fmt"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 )
 

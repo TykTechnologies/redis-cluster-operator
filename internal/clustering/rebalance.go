@@ -2,9 +2,10 @@ package clustering
 
 import (
 	"fmt"
+	"math"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
-	"math"
 )
 
 // RebalancedCluster rebalanced a redis cluster.

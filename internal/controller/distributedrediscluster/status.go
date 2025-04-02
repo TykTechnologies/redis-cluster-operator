@@ -2,10 +2,11 @@ package distributedrediscluster
 
 import (
 	"fmt"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 	"math"
 	"reflect"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"

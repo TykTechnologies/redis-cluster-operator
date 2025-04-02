@@ -2,12 +2,13 @@ package distributedrediscluster
 
 import (
 	"fmt"
+	"net"
+	"time"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
-	"net"
-	"time"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"

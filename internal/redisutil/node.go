@@ -3,11 +3,12 @@ package redisutil
 import (
 	"errors"
 	"fmt"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 	"net"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 
 	corev1 "k8s.io/api/core/v1"
 

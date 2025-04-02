@@ -1,8 +1,9 @@
 package clustering
 
 import (
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"testing"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 )
 
 func Test_computeReshardTable(t *testing.T) {

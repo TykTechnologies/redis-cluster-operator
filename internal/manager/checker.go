@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
 

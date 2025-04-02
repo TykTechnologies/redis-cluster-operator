@@ -2,11 +2,12 @@ package redisutil
 
 import (
 	"fmt"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 	"net"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 
 	"github.com/go-logr/logr"
 )

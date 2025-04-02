@@ -2,6 +2,8 @@ package distributedrediscluster
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/clustering"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/controller"
@@ -9,7 +11,6 @@ import (
 	"github.com/TykTechnologies/redis-cluster-operator/internal/manager"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
-	"time"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"

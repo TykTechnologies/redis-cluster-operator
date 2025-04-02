@@ -1,13 +1,14 @@
 package manager
 
 import (
+	"strings"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/osm"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/configmaps"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/poddisruptionbudgets"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/services"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
-	"strings"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"

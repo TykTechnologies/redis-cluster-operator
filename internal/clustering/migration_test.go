@@ -1,9 +1,10 @@
 package clustering
 
 import (
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"reflect"
 	"testing"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 )
 
 func TestDispatchSlotToMaster(t *testing.T) {
