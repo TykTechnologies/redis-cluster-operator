@@ -1,3 +1,5 @@
+version: 2
+
 run:
   timeout: 5m
   allow-parallel-runners: true
@@ -12,22 +14,19 @@ issues:
     - path: "api/*"
       linters:
         - lll
-    - path: "internal/*"
+    - path: "pkg/*"
       linters:
         - dupl
         - lll
+
 linters:
   disable-all: true
   enable:
     - dupl
     - errcheck
-    - exportloopref
     - ginkgolinter
     - goconst
     - gocyclo
-    - gofmt
-    - goimports
-    - gosimple
     - govet
     - ineffassign
     - lll
@@ -36,7 +35,6 @@ linters:
     - prealloc
     - revive
     - staticcheck
-    - typecheck
     - unconvert
     - unparam
     - unused

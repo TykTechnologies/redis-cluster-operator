@@ -60,7 +60,7 @@ var _ = Describe("controller", Ordered, func() {
 			var err error
 
 			// projectimage stores the name of the image used in the example
-			var projectimage = "amiralh/redis-cluster-operator:v0.0.9"
+			var projectimage = "amiralh/redis-cluster-operator:v0.0.19"
 
 			//By("building the manager(Operator) image")
 			//cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
