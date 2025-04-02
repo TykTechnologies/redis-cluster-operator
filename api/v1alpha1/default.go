@@ -109,7 +109,7 @@ func DefaultOwnerReferences(cluster *DistributedRedisCluster) []metav1.OwnerRefe
 		*metav1.NewControllerRef(cluster, schema.GroupVersionKind{
 			Group:   GroupVersion.Group,
 			Version: GroupVersion.Version,
-			Kind:    "DistributedRedisCluster",
+			Kind:    DistributedRedisClusterKind,
 		}),
 	}
 }

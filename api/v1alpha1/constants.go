@@ -94,5 +94,8 @@ const (
 	UtilVolumeName = "util-volume"
 )
 
-const RedisClusterBackupKind = "RedisClusterBackup"
-const RedisClusterCleanupKind = "RedisClusterCleanup"
+const (
+	DistributedRedisClusterKind = "DistributedRedisCluster"
+	RedisClusterBackupKind      = "RedisClusterBackup"
+	RedisClusterCleanupKind     = "RedisClusterCleanup"
+)
