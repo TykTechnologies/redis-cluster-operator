@@ -1,0 +1,96 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.1
+  name: redisclustercleanups.redis.kun
+spec:
+  group: redis.kun
+  names:
+    kind: RedisClusterCleanup
+    listKind: RedisClusterCleanupList
+    plural: redisclustercleanups
+    shortNames:
+    - drcc
+    singular: redisclustercleanup
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Cleanup schedule
+      jsonPath: .spec.schedule
+      name: Schedule
+      type: string
+    - description: Whether the Cleaner is currently suspended (True/False).
+      jsonPath: .spec.suspend
+      name: Suspend
+      type: boolean
+    - description: The last time the Cleaner completed successfully
+      jsonPath: .status.lastSuccessfulTime
+      name: LastSuccessfulTime
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: RedisClusterCleanup is the Schema for the redisclustercleanups
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: RedisClusterCleanupSpec defines the desired state of RedisClusterCleanup
+            properties:
+              expiredThreshold:
+                default: 200
+                description: ExpiredThreshold defines the minimum number of expired
+                  keys that triggers a cleanup.
+                type: integer
+              namespaces:
+                items:
+                  type: string
+                minItems: 1
+                type: array
+              schedule:
+                description: Schedule is a cron expression to run the cleanup job.
+                pattern: ^(\S+\s+){4}\S+$
+                type: string
+              suspend:
+                default: false
+                type: boolean
+            required:
+            - namespaces
+            - schedule
+            type: object
+          status:
+            description: RedisClusterCleanupStatus defines the observed state of RedisClusterCleanup
+            properties:
+              lastScheduleTime:
+                description: LastScheduleTime is the last time the CronJob was scheduled.
+                format: date-time
+                type: string
+              lastSuccessfulTime:
+                description: LastSuccessfulTime is the last time the CronJob completed
+                  successfully.
+                format: date-time
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
