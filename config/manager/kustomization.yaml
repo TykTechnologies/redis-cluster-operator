@@ -4,5 +4,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: amiralh/redis-cluster-operator
-  newTag: v0.0.31
+  newName: tyk/redis-cluster-operator
+  newTag: v0.0.33
