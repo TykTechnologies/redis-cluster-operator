@@ -21,8 +21,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/TykTechnologies/redis-cluster-operator/pkg/controller/distributedrediscluster"
-	"github.com/TykTechnologies/redis-cluster-operator/pkg/controller/redisclusterbackup"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/distributedrediscluster"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/redisclusterbackup"
 	"github.com/spf13/pflag"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -39,7 +39,7 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	"github.com/TykTechnologies/redis-cluster-operator/pkg/config"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
