@@ -1,8 +1,16 @@
-# redis-cluster-operator-old
-// TODO(user): Add simple overview of use/purpose
+# redis-cluster-operator
+Redis Cluster Operator manages [Redis Cluster](https://redis.io/topics/cluster-spec) atop Kubernetes.
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+The operator itself is built with the [Operator framework](https://github.com/operator-framework/operator-sdk).
+
+![Redis Cluster atop Kubernetes](/static/redis-cluster.png)
+
+Each master node and its slave nodes is managed by a statefulSet, create a headless svc for each statefulSet,
+and create a clusterIP service for all nodes.
+
+Each statefulset uses PodAntiAffinity to ensure that the master and slaves are dispersed on different nodes.
+At the same time, when the operator selects the master in each statefulset, it preferentially select the pod
+with different k8s nodes as master.
 
 ## Getting Started
 
