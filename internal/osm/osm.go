@@ -9,6 +9,7 @@ import (
 	awsconst "kmodules.xyz/constants/aws"
 	azconst "kmodules.xyz/constants/azure"
 	osconst "kmodules.xyz/constants/openstack"
+	googconst "kmodules.xyz/constants/google"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -29,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	otx "github.com/TykTechnologies/redis-cluster-operator/internal/osm/context"
+	gcs "github.com/TykTechnologies/redis-cluster-operator/internal/osm/google"
 )
 
 const (
@@ -158,11 +160,11 @@ func NewOSMContext(client client.Client, spec api.Backend, namespace string) (*o
 			}
 		}
 		return nc, nil
-		//} else if spec.GCS != nil {
-		//	nc.Provider = gcs.Kind
-		//	nc.Config[gcs.ConfigProjectId] = string(config[googconst.GOOGLE_PROJECT_ID])
-		//	nc.Config[gcs.ConfigJSON] = string(config[googconst.GOOGLE_SERVICE_ACCOUNT_JSON_KEY])
-		//	return nc, nil
+		} else if spec.GCS != nil {
+			nc.Provider = gcs.Kind
+			nc.Config[gcs.ConfigProjectId] = string(config[googconst.GOOGLE_PROJECT_ID])
+			nc.Config[gcs.ConfigJSON] = string(config[googconst.GOOGLE_SERVICE_ACCOUNT_JSON_KEY])
+			return nc, nil
 	} else if spec.Azure != nil {
 		nc.Provider = azure.Kind
 		nc.Config[azure.ConfigAccount] = string(config[azconst.AZURE_ACCOUNT_NAME])
