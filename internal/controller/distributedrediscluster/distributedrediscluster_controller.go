@@ -20,15 +20,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
-	internalController "github.com/TykTechnologies/redis-cluster-operator/internal/controller"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/exec"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/heal"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
-	clustermanger "github.com/TykTechnologies/redis-cluster-operator/internal/manager"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	runtimeschema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -41,10 +32,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
+	internalController "github.com/TykTechnologies/redis-cluster-operator/internal/controller"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/exec"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/heal"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
+	clustermanger "github.com/TykTechnologies/redis-cluster-operator/internal/manager"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 )
 
 // DistributedRedisClusterReconciler reconciles a DistributedRedisCluster object

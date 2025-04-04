@@ -1,9 +1,10 @@
 package heal
 
 import (
-	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 )
 
 type CheckAndHeal struct {

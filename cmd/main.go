@@ -21,9 +21,10 @@ import (
 	"flag"
 	"os"
 
+	"github.com/spf13/pflag"
+
 	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/distributedrediscluster"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/redisclusterbackup"
-	"github.com/spf13/pflag"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.

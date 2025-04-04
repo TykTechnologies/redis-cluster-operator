@@ -1,9 +1,10 @@
 package heal
 
 import (
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/errors"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 )

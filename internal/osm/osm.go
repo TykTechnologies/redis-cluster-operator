@@ -10,7 +10,6 @@ import (
 	azconst "kmodules.xyz/constants/azure"
 	osconst "kmodules.xyz/constants/openstack"
 
-	otx "github.com/TykTechnologies/redis-cluster-operator/internal/osm/context"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
@@ -28,6 +27,8 @@ import (
 	ktypes "k8s.io/apimachinery/pkg/types"
 	api "kmodules.xyz/objectstore-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	otx "github.com/TykTechnologies/redis-cluster-operator/internal/osm/context"
 )
 
 const (

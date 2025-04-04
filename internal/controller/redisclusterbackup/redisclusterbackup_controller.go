@@ -19,9 +19,6 @@ package redisclusterbackup
 import (
 	"context"
 
-	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 	"github.com/go-logr/logr"
 	batch "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -33,6 +30,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
+	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 )
 
 const backupFinalizer = "finalizer.backup.redis.kun"
