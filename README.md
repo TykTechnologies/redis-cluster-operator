@@ -27,6 +27,14 @@ with different k8s nodes as master.
   - [Deploy a Sample Redis Cluster](#deploy-a-sample-redis-cluster)
   - [Scaling Up the Redis Cluster](#scaling-up-the-redis-cluster)
   - [Scaling Down the Redis Cluster](#scaling-down-the-redis-cluster)
+  - [Create cleanup job](#create-cleanup-job)
+  - [Backup and Restore](#backup-and-restore)
+  - [Prometheus Discovery](#prometheus-discovery)
+  - [Create Redis Cluster with password](#create-redis-cluster-with-password)
+  - [Persistent Volume](#persistent-volume)
+  - [Custom Configuration](#custom-configuration)
+  - [Custom Service](#custom-service)
+  - [Custom Resource](#custom-resource)
 - [Contributing](#contributing)
 
 ## Getting Started
@@ -117,7 +125,7 @@ kubectl apply -f https://raw.githubusercontent.com/<org>/redis-cluster-operator/
 NOTE: **Only the redis cluster that use persistent storage(pvc) can recover after accidental deletion or rolling update.Even if you do not use persistence(like rdb or aof), you need to set pvc for redis.**
 
 ```
-$ kubectl apply -f deploy/example/redis.kun_v1alpha1_distributedrediscluster_cr.yaml
+$ kubectl apply -f config/samples/example/redis.kun_v1alpha1_distributedrediscluster_cr.yaml
 ```
 
 Verify that the cluster instances and its components are running.
@@ -187,6 +195,62 @@ spec:
   masterSize: 3
   ClusterReplicas: 1
   image: redis:5.0.4-alpine
+```
+
+#### Create Cleanup Job
+```
+$ kubectl create -f config/samples/example/cleanup/cleanup-job.yaml
+```
+
+
+#### Backup and Restore
+
+NOTE: **Only Ceph S3 object storage and PVC is supported now**
+
+Backup
+```
+$ kubectl create -f config/samples/example/backup-restore/redisclusterbackup_cr.yaml
+```
+
+Restore from backup
+```
+$ kubectl create -f config/samples/example/backup-restore/restore.yaml
+```
+
+#### Prometheus Discovery
+
+```
+$ kubectl create -f config/samples/example/prometheus-exporter.yaml
+```
+
+#### Create Redis Cluster with password
+
+```
+$ kubectl create -f config/samples/example/custom-password.yaml
+```
+
+#### Persistent Volume
+
+```
+$ kubectl create -f config/samples/example/persistent.yaml
+```
+
+#### Custom Configuration
+
+```
+$ kubectl create -f config/samples/example/custom-config.yaml
+```
+
+#### Custom Service
+
+```
+$ kubectl create -f config/samples/example/custom-service.yaml
+```
+
+#### Custom Resource
+
+```
+$ kubectl create -f config/samples/example/custom-resources.yaml
 ```
 
 ## Contributing
