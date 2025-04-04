@@ -119,7 +119,7 @@ Users can just run kubectl apply -f <URL for YAML BUNDLE> to install the project
 kubectl apply -f https://raw.githubusercontent.com/<org>/redis-cluster-operator/<tag or branch>/dist/install.yaml
 ```
 
-### Usage
+## Usage
 #### Deploy a sample Redis Cluster
 
 NOTE: **Only the redis cluster that use persistent storage(pvc) can recover after accidental deletion or rolling update.Even if you do not use persistence(like rdb or aof), you need to set pvc for redis.**
@@ -258,3 +258,7 @@ $ kubectl create -f config/samples/example/custom-resources.yaml
 **NOTE:** Run `make help` for more information on all potential `make` targets
 
 More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+
+## End to end tests
+
+see [e2e](/test/e2e/README.md)

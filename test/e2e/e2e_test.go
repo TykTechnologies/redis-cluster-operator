@@ -27,7 +27,7 @@ import (
 	"github.com/TykTechnologies/redis-cluster-operator/test/utils"
 )
 
-const namespace = "redis-cluster-operator-old-system"
+const namespace = "redis-cluster-operator-system"
 
 var _ = Describe("controller", Ordered, func() {
 	BeforeAll(func() {
@@ -60,19 +60,19 @@ var _ = Describe("controller", Ordered, func() {
 			var err error
 
 			// projectimage stores the name of the image used in the example
-			var projectimage = "tyk/redis-cluster-operator:v0.0.19"
+			var projectimage = "tyk/redis-cluster-operator:v0.0.1"
 
-			//By("building the manager(Operator) image")
-			//cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
-			//_, err = utils.Run(cmd)
-			//ExpectWithOffset(1, err).NotTo(HaveOccurred())
+			By("building the manager(Operator) image")
+			cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 			By("loading the the manager(Operator) image on Kind")
 			err = utils.LoadImageToKindClusterWithName(projectimage, "test")
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 			By("installing CRDs")
-			cmd := exec.Command("make", "install")
+			cmd = exec.Command("make", "install")
 			_, err = utils.Run(cmd)
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
