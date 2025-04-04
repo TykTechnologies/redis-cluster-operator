@@ -29,10 +29,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
 )
 
 // RedisClusterCleanupReconciler reconciles a RedisClusterCleanup object
@@ -137,7 +138,7 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 		redisPassword := string(passwordBytes)
 		logger.V(3).Info("Successfully retrieved Redis password", "cluster", distributedRedisCluster.Name)
 
-		logger.Info("Cleaning", "DRC namespace", distributedRedisCluster.Namespace ,"DRC name", distributedRedisCluster.Name)
+		logger.Info("Cleaning", "DRC namespace", distributedRedisCluster.Namespace, "DRC name", distributedRedisCluster.Name)
 
 		var wg sync.WaitGroup
 		// Create a goroutine for each host.
