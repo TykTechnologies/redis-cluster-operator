@@ -22,18 +22,22 @@ import (
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 	runtimeschema "k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
+	ctrlController "sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
-	internalController "github.com/TykTechnologies/redis-cluster-operator/internal/controller"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/controller"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/exec"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/heal"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
@@ -41,12 +45,6 @@ import (
 	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
-
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 )
 
 // DistributedRedisClusterReconciler reconciles a DistributedRedisCluster object
@@ -141,8 +139,8 @@ func (r *DistributedRedisClusterReconciler) Reconcile(_ context.Context, req ctr
 
 	err = r.ensureCluster(ctx)
 	if err != nil {
-		switch internalController.GetType(err) {
-		case internalController.StopRetry:
+		switch controller.GetType(err) {
+		case controller.StopRetry:
 			reqLogger.Info("invalid", "err", err)
 			return reconcile.Result{}, nil
 		}
@@ -156,7 +154,7 @@ func (r *DistributedRedisClusterReconciler) Reconcile(_ context.Context, req ctr
 	matchLabels := getLabels(instance)
 	redisClusterPods, err := r.statefulSetController.GetStatefulSetPodsByLabels(instance.Namespace, matchLabels)
 	if err != nil {
-		return reconcile.Result{}, internalController.Kubernetes.Wrap(err, "GetStatefulSetPods")
+		return reconcile.Result{}, controller.Kubernetes.Wrap(err, "GetStatefulSetPods")
 	}
 
 	ctx.pods = clusterPods(redisClusterPods.Items)
@@ -169,8 +167,8 @@ func (r *DistributedRedisClusterReconciler) Reconcile(_ context.Context, req ctr
 	})
 	err = r.waitPodReady(ctx)
 	if err != nil {
-		switch internalController.GetType(err) {
-		case internalController.Kubernetes:
+		switch controller.GetType(err) {
+		case controller.Kubernetes:
 			return reconcile.Result{}, err
 		}
 		reqLogger.WithValues("err", err).Info("waitPodReady")
@@ -182,25 +180,25 @@ func (r *DistributedRedisClusterReconciler) Reconcile(_ context.Context, req ctr
 
 	password, err := statefulsets.GetClusterPassword(r.Client, instance)
 	if err != nil {
-		return reconcile.Result{}, internalController.Kubernetes.Wrap(err, "getClusterPassword")
+		return reconcile.Result{}, controller.Kubernetes.Wrap(err, "getClusterPassword")
 	}
 
 	admin, err := newRedisAdmin(ctx.pods, password, config.RedisConf(), reqLogger)
 	if err != nil {
-		return reconcile.Result{}, internalController.Redis.Wrap(err, "newRedisAdmin")
+		return reconcile.Result{}, controller.Redis.Wrap(err, "newRedisAdmin")
 	}
 	defer admin.Close()
 
 	clusterInfos, err := admin.GetClusterInfos()
 	if err != nil {
 		if clusterInfos.Status == redisutil.ClusterInfosPartial {
-			return reconcile.Result{}, internalController.Redis.Wrap(err, "GetClusterInfos")
+			return reconcile.Result{}, controller.Redis.Wrap(err, "GetClusterInfos")
 		}
 	}
 
 	requeue, err := ctx.healer.Heal(instance, clusterInfos, admin)
 	if err != nil {
-		return reconcile.Result{}, internalController.Redis.Wrap(err, "Heal")
+		return reconcile.Result{}, controller.Redis.Wrap(err, "Heal")
 	}
 	if requeue {
 		return reconcile.Result{RequeueAfter: requeueAfter}, nil
@@ -210,8 +208,8 @@ func (r *DistributedRedisClusterReconciler) Reconcile(_ context.Context, req ctr
 	ctx.clusterInfos = clusterInfos
 	err = r.waitForClusterJoin(ctx)
 	if err != nil {
-		switch internalController.GetType(err) {
-		case internalController.Requeue:
+		switch controller.GetType(err) {
+		case controller.Requeue:
 			reqLogger.WithValues("err", err).Info("requeue")
 			return reconcile.Result{RequeueAfter: requeueAfter}, nil
 		}
@@ -263,7 +261,7 @@ func (r *DistributedRedisClusterReconciler) Reconcile(_ context.Context, req ctr
 	}
 
 	if err := admin.SetConfigIfNeed(instance.Spec.Config); err != nil {
-		return reconcile.Result{}, internalController.Redis.Wrap(err, "SetConfigIfNeed")
+		return reconcile.Result{}, controller.Redis.Wrap(err, "SetConfigIfNeed")
 	}
 
 	status := buildClusterStatus(clusterInfos, ctx.pods, instance, reqLogger)
@@ -294,7 +292,7 @@ func (r *DistributedRedisClusterReconciler) Reconcile(_ context.Context, req ctr
 	newClusterInfos, err := admin.GetClusterInfos()
 	if err != nil {
 		if clusterInfos.Status == redisutil.ClusterInfosPartial {
-			return reconcile.Result{}, internalController.Redis.Wrap(err, "GetClusterInfos")
+			return reconcile.Result{}, controller.Redis.Wrap(err, "GetClusterInfos")
 		}
 	}
 	newStatus := buildClusterStatus(newClusterInfos, ctx.pods, instance, reqLogger)
@@ -358,6 +356,6 @@ func (r *DistributedRedisClusterReconciler) SetupWithManager(mgr ctrl.Manager) e
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&redisv1alpha1.DistributedRedisCluster{}).
 		WithEventFilter(pred).
-		WithOptions(controller.Options{}).
+		WithOptions(ctrlController.Options{}).
 		Complete(r)
 }

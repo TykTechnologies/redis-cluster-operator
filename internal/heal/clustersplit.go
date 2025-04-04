@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-
 	"k8s.io/apimachinery/pkg/util/errors"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 )
 
 // FixClusterSplit use to detect and fix Cluster split

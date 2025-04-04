@@ -5,15 +5,14 @@ import (
 	"net"
 	"time"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
-
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 )
 
 var (
