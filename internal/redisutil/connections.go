@@ -8,10 +8,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
-
 	"github.com/go-logr/logr"
 	"github.com/mediocregopher/radix.v2/redis"
+
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 )
 
 const (

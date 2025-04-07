@@ -3,10 +3,9 @@ package manager
 import (
 	"time"
 
+	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/heal"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-
-	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
 )
 
 type IHeal interface {

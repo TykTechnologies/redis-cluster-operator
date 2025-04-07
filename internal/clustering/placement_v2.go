@@ -3,12 +3,11 @@ package clustering
 import (
 	"fmt"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
-
 	"github.com/go-logr/logr"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
 )
 
 type Ctx struct {

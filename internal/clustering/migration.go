@@ -5,11 +5,10 @@ import (
 	"math"
 	"sort"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
-
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/redisutil"
 )
 
 var log = logf.Log.WithName("clustering")

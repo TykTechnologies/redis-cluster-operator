@@ -26,5 +26,5 @@ make test-e2e
 
 ## Notes
 
-- Test namespace: `redis-cluster-operator-old-system`
+- Test namespace: `redis-cluster-operator-system`
 - Image used: `tyk/redis-cluster-operator:v0.0.1`

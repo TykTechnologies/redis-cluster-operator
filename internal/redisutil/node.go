@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
-
 	corev1 "k8s.io/api/core/v1"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/utils"
 )
 
 const (

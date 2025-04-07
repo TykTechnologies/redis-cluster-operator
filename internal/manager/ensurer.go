@@ -3,19 +3,18 @@ package manager
 import (
 	"strings"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/osm"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/configmaps"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/poddisruptionbudgets"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/services"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
-
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/osm"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/configmaps"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/poddisruptionbudgets"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/services"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
 )
 
 type IEnsureResource interface {

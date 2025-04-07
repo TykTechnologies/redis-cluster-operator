@@ -3,13 +3,12 @@ package manager
 import (
 	"fmt"
 
-	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
-	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
-
 	appsv1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/k8sutil"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/resources/statefulsets"
 )
 
 type ICheck interface {
