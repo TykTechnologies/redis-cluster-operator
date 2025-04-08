@@ -26,6 +26,7 @@ func processHost(host, port, password string, spec v1alpha1.RedisClusterCleanupS
 		DB:       0,
 	})
 
+	cleanupTriggered := false
 	// Pre-compile expiration regexes provided in the spec.
 	var expirationRegexList []*regexp.Regexp
 	for _, regexStr := range spec.ExpirationRegexes {
@@ -124,6 +125,7 @@ func processHost(host, port, password string, spec v1alpha1.RedisClusterCleanupS
 			// Trigger deletion if the number of accumulated expired keys meets/exceeds the threshold.
 			if int64(len(keysToDelete)) >= expiredThreshold {
 				logger.Info("Expired keys threshold reached, deleting keys", "redis-host", addr, "pattern", keyPattern, "count", len(keysToDelete))
+				cleanupTriggered = true
 				pipeDel := client.Pipeline()
 				for _, key := range keysToDelete {
 					pipeDel.Del(ctx, key)
@@ -143,9 +145,12 @@ func processHost(host, port, password string, spec v1alpha1.RedisClusterCleanupS
 		}
 	}
 
-	// Final cleanup: delete remaining keys only if their number meets/exceeds the expiredThreshold.
-	if int64(len(keysToDelete)) >= expiredThreshold {
-		logger.Info("Final cleanup: Expired keys threshold met, deleting remaining keys", "redis-host", addr, "count", len(keysToDelete))
+	// Delete any remaining keys after scanning is complete.
+	// There can be a situation where the final set of keys accumulated (from the last SCAN iteration)
+	// does not meet the threshold for batch deletion. If we don't handle these,
+	// they'd remain undeleted even though they meet the conditions for deletion.
+	if len(keysToDelete) > 0 && cleanupTriggered {
+		logger.Info("Final Cleanup: Deleting remaining keys", "redis-host", addr, "count", len(keysToDelete))
 		pipeDel := client.Pipeline()
 		for _, key := range keysToDelete {
 			pipeDel.Del(ctx, key)
@@ -154,7 +159,5 @@ func processHost(host, port, password string, spec v1alpha1.RedisClusterCleanupS
 		if err != nil {
 			logger.Error(err, "Error deleting remaining keys", "node", addr)
 		}
-	} else if len(keysToDelete) > 0 {
-		logger.Info("Final cleanup: Not enough expired keys to trigger deletion", "redis-host", addr, "expiredKeys", len(keysToDelete))
 	}
 }
