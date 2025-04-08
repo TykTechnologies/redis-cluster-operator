@@ -36,9 +36,25 @@ type RedisClusterCleanupSpec struct {
 	// +kubebuilder:default:=200
 	ExpiredThreshold int `json:"expiredThreshold,omitempty"`
 
+	// ExpiredThreshold defines the minimum number of expired keys that triggers a cleanup.
+	// +kubebuilder:default:=200
+	ScanBatchSize int `json:"scanBatchSize,omitempty"`
+
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinItems=1
 	Namespaces []string `json:"namespaces"`
+
+	// KeyPatterns holds one or more patterns for SCAN operations.
+	// For example, ["apikey-*", "session-*"]
+	KeyPatterns []string `json:"keyPatterns,omitempty"`
+
+	// ExpirationRegexes holds one or more regexes to extract the expiration value.
+	// For example: ["\"expires\":\\s*(\\d+)"]
+	ExpirationRegexes []string `json:"expirationRegexes,omitempty"`
+
+	// SkipPatterns holds substrings or patterns that if found in a key's value will skip deletion.
+	// For example, ["TykJWTSessionID"]
+	SkipPatterns []string `json:"skipPatterns,omitempty"`
 }
 
 // RedisClusterCleanupStatus defines the observed state of RedisClusterCleanup

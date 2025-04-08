@@ -6,4 +6,16 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: redisclustercleanup-sample
 spec:
-  # TODO(user): Add fields here
+  schedule: "0 2 * * *"         # Cron schedule to run daily at 2 AM.
+  suspend: false                # Set to true to pause the cleanup job.
+  expiredThreshold: 200         # Minimum number of expired keys to trigger deletion.
+  scanBatchSize: 200            # Batch size for scanning keys in Redis.
+  namespaces:
+    - default                 # List of namespaces where Redis clusters are deployed.
+    - redis
+  keyPatterns:
+    - "apikey-*"
+  expirationRegexes:
+    - "\"expires\":\\s*(\\d+)"    # Regex to extract the expiration timestamp from key values.
+  skipPatterns:
+    - "TykJWTSessionID"       # Keys containing this string will be skipped.

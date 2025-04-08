@@ -99,8 +99,8 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 
 	for _, distributedRedisCluster := range distributedRedisClusters.Items {
 		logger.V(3).Info("Checking for expired keys", "cluster", distributedRedisCluster.Name)
-		if distributedRedisCluster.Status.Reason != "OK" {
-			logger.Info("Skip the cluster since its status is not OK ", "cluster",
+		if distributedRedisCluster.Status.Status != redisv1alpha1.ClusterStatusOK {
+			logger.Info("Skip the cluster since its status is not healthy ", "cluster",
 				distributedRedisCluster.Name, "status", distributedRedisCluster.Status.Status,
 				"Namespace", distributedRedisCluster.Namespace)
 			continue
@@ -150,7 +150,7 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 			wg.Add(1)
 			go func(host string) {
 				defer wg.Done()
-				processHost(host, "6379", redisPassword, int64(redisClusterCleanup.Spec.ExpiredThreshold), logger)
+				processHost(host, "6379", redisPassword, redisClusterCleanup.Spec, logger)
 			}(host)
 		}
 		wg.Wait()
