@@ -1,4 +1,4 @@
-package drc_test
+package drc_crud_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
-	drctest "github.com/TykTechnologies/redis-cluster-operator/test/e2e/drc"
+	drctest "github.com/TykTechnologies/redis-cluster-operator/test/e2e/drc_crud/drc"
 )
 
 var f *drctest.Framework

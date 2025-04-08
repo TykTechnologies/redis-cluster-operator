@@ -1480,7 +1480,7 @@ spec:
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are key value pairs that is used to select
+                        description: Labels are key value pairs that are used to select
                           Prometheus instance via ServiceMonitor labels.
                         type: object
                       namespace:

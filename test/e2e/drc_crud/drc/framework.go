@@ -3,8 +3,7 @@ package drc
 import (
 	"context"
 	"fmt"
-	"github.com/TykTechnologies/redis-cluster-operator/test/utils"
-
+	
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -16,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	redisv1alpha1 "github.com/TykTechnologies/redis-cluster-operator/api/v1alpha1"
+	"github.com/TykTechnologies/redis-cluster-operator/test/utils"
 )
 
 type Framework struct {
@@ -48,9 +48,9 @@ func (f *Framework) BeforeEach() error {
 	if err := f.createTestNamespace(); err != nil {
 		return err
 	}
-	//if err := f.createRBAC(); err != nil {
-	//	return err
-	//}
+	if err := f.createRBAC(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -228,15 +228,15 @@ func (f *Framework) rolebindingName() string {
 }
 
 func (f *Framework) roleName() string {
-	return fmt.Sprintf("cr-redis")
+	return "cr-redis"
 }
 
 func (f *Framework) PasswordName() string {
-	return fmt.Sprintf("redis-admin-passwd")
+	return "redis-admin-passwd"
 }
 
 func (f *Framework) NewPasswordName() string {
-	return fmt.Sprintf("redis-admin-newpasswd")
+	return "redis-admin-newpasswd"
 }
 
 func (f *Framework) deleteRBAC() error {

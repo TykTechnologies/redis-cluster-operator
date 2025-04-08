@@ -18,7 +18,6 @@ package utils
 
 import (
 	"fmt"
-	"github.com/onsi/ginkgo"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -107,8 +106,8 @@ func InstallCertManager() error {
 }
 
 // LoadImageToKindClusterWithName loads a local docker image to the kind cluster
-func LoadImageToKindClusterWithName(name, cluster string) error {
-	//cluster := "kind"
+func LoadImageToKindClusterWithName(name string) error {
+	cluster := "kind"
 	if v, ok := os.LookupEnv("KIND_CLUSTER"); ok {
 		cluster = v
 	}
@@ -133,12 +132,19 @@ func GetNonEmptyLines(output string) []string {
 }
 
 // GetProjectDir will return the directory where the project is
+// GetProjectDir returns the project root directory by trimming everything after "/test/e2e" in the current working directory.
 func GetProjectDir() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return wd, err
 	}
-	wd = strings.Replace(wd, "/test/e2e", "", -1)
+
+	// Find the index of "/test/e2e" in the working directory.
+	idx := strings.Index(wd, "/test/e2e")
+	if idx != -1 {
+		wd = wd[:idx]
+	}
+
 	return wd, nil
 }
 
@@ -147,7 +153,7 @@ func nowStamp() string {
 }
 
 func log(level string, format string, args ...interface{}) {
-	fmt.Fprintf(ginkgo.GinkgoWriter, nowStamp()+": "+level+": "+format+"\n", args...)
+	fmt.Fprintf(GinkgoWriter, nowStamp()+": "+level+": "+format+"\n", args...)
 }
 
 // Logf logs in e2e framework
@@ -159,7 +165,7 @@ func Logf(format string, args ...interface{}) {
 func Failf(format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	log("ERROR", msg)
-	ginkgo.Fail(nowStamp()+": "+msg, 1)
+	Fail(nowStamp()+": "+msg, 1)
 }
 
 // LogAndReturnErrorf logs and return an error
@@ -179,6 +185,6 @@ func RandString(n int) string {
 	return string(b)
 }
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
+// func init() {
+// 	rand.Seed(time.Now().UnixNano())
+// }
