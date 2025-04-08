@@ -46,7 +46,6 @@ func init() {
 
 var logger = logf.Log.WithName("e2e-test")
 
-
 func NewDistributedRedisCluster(name, namespace, image, passwordName string, masterSize, clusterReplicas int32) *redisv1alpha1.DistributedRedisCluster {
 	configParams := map[string]string{
 		"hz":         "11",
@@ -69,12 +68,12 @@ func NewDistributedRedisCluster(name, namespace, image, passwordName string, mas
 			PasswordSecret:  &corev1.LocalObjectReference{Name: passwordName},
 			Resources: &corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("1"),
-					corev1.ResourceMemory: resource.MustParse("512Mi"),
+					corev1.ResourceCPU:    resource.MustParse("200m"),
+					corev1.ResourceMemory: resource.MustParse("100Mi"),
 				},
 				Limits: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("1"),
-					corev1.ResourceMemory: resource.MustParse("1024Mi"),
+					corev1.ResourceCPU:    resource.MustParse("200m"),
+					corev1.ResourceMemory: resource.MustParse("200Mi"),
 				},
 			},
 			Storage: &redisv1alpha1.RedisStorage{
