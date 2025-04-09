@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMG: tykio/redis-cluster-operator:v0.0.0-teste2e
-      CRUD_IMG: tykio/drc_crud-test:v0.0.0-teste2e
+      CRUD_IMG: tykio/drc-crud-test:v0.0.0-teste2e
       KIND_CLUSTER: e2e-test
 
     steps:
@@ -94,11 +94,38 @@ jobs:
             exit 1
           fi
           
-          # Wait for the pod to be in 'Running' state
-          echo "Waiting for pod $POD to be in Running state..."
-          kubectl wait --namespace redis-cluster-operator-system --for=condition=ready pod/$POD --timeout=300s
+          # Initialize the timeout and elapsed time
+          timeout=300  # timeout in seconds (5 minutes)
+          elapsed=0    # elapsed time tracker
+          check_interval=5  # interval between checks in seconds
+          # Loop to check if the pod is 1/1 and Running
+          echo "Waiting for pod $POD to be in 1/1 and Running state..."
+          while true; do
+            pod_status=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.containerStatuses[0].ready}")
+            pod_restarts=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.containerStatuses[0].restartCount}")
+            pod_phase=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.phase}")
+            containers=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.containerStatuses[0].state.running}")
+            
+            echo "Current Pod Status: $pod_status, Restarts: $pod_restarts, Phase: $pod_phase, Containers Running: $containers"
+            
+            # Check if the pod is 1/1 and running
+            if [ "$pod_status" == "true" ] && [ "$pod_phase" == "Running" ]; then
+              echo "Pod $POD is in 1/1 and Running state."
+              break
+            fi
           
-          echo "Pod found: $POD. Streaming logs from the pod..."
+            # Check if the timeout has been reached
+            if [ $elapsed -ge $timeout ]; then
+              echo "Timeout reached while waiting for pod to be in 1/1 and Running state."
+              exit 1
+            fi
+      
+            # Sleep before checking again
+            sleep $check_interval
+            elapsed=$((elapsed + check_interval))
+          done
+          
+          echo "Streaming logs from the pod..."
           # Start streaming logs in the background.
           kubectl logs --namespace redis-cluster-operator-system -f "$POD" &
       
