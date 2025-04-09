@@ -11,7 +11,7 @@ spec:
     spec:
       serviceAccountName: redis-cluster-operator-controller-manager
       containers:
-        - name: drc-drud
+        - name: drc-crud
           image: tykio/drc_crud-test:v0.0.0-teste2e
           imagePullPolicy: IfNotPresent
           volumeMounts:

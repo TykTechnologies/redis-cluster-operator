@@ -93,7 +93,11 @@ jobs:
             echo "Error: Pod for job 'drc-crud-e2e-job' was not created."
             exit 1
           fi
-      
+          
+          # Wait for the pod to be in 'Running' state
+          echo "Waiting for pod $POD to be in Running state..."
+          kubectl wait --namespace redis-cluster-operator-system --for=condition=ready pod/$POD --timeout=300s
+          
           echo "Pod found: $POD. Streaming logs from the pod..."
           # Start streaming logs in the background.
           kubectl logs --namespace redis-cluster-operator-system -f "$POD" &
