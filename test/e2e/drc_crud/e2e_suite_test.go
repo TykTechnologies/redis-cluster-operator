@@ -1,6 +1,8 @@
 package drc_crud_test
 
 import (
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -19,6 +21,7 @@ func TestDrc(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 	f = drctest.NewFramework("test")
 	if err := f.BeforeEach(); err != nil {
 		f.Failf("Framework BeforeEach err: %s", err.Error())

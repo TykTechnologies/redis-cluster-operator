@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: drc-crud-e2e-job
+  namespace: redis-cluster-operator-system
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      name: drc-drud-e2e-pod
+    spec:
+      serviceAccountName: redis-cluster-operator-controller-manager
+      containers:
+        - name: drc-drud
+          image: tykio/drc_crud-test:v0.0.0-teste2e
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: redisconf
+              mountPath: /etc/redisconf
+          args:
+            - --rename-command-path=/etc/redisconf
+            - --rename-command-file=redis.conf
+      volumes:
+        - name: redisconf
+          configMap:
+            name: redis-cluster-operator-redisconf
+      restartPolicy: Never

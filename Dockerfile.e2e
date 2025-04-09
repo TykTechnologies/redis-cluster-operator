@@ -1,4 +1,6 @@
 FROM golang:1.23 AS builder
+ARG TARGETOS
+ARG TARGETARCH
 
 # Set the working directory inside the container
 WORKDIR /workspace
@@ -18,11 +20,8 @@ COPY test/ test/
 
 # Compile the end-to-end tests into a binary.
 # This command compiles tests in the ./test/e2e/ directory into an executable named "e2e-tests".
-RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go test -c -o /workspace/e2e-tests ./test/e2e/...
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go test -c -o /workspace/e2e-tests ./test/e2e/drc_crud/
 
-# --------------------------
-# Stage 2: Runtime
-# --------------------------
 FROM alpine:3.17
 
 WORKDIR /

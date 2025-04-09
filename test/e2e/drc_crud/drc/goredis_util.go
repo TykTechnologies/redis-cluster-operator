@@ -9,7 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-const defaultTimeOut = time.Second * 2
+const defaultTimeOut = time.Second * 30
 
 // GoRedis contains ClusterClient.
 type GoRedis struct {

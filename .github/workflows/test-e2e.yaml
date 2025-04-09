@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMG: tykio/redis-cluster-operator:v0.0.0-teste2e
+      CRUD_IMG: tykio/drc_crud-test:v0.0.0-teste2e
       KIND_CLUSTER: e2e-test
 
     steps:
@@ -60,10 +61,68 @@ jobs:
         run: |
           make deploy IMG=${{ env.IMG }}
 
+      - name: Build Distributed Redis Cluster CRUD E2E Test Image
+        run: |
+          make docker-build-e2e IMG=${{ env.CRUD_IMG }}
+
+      - name: Load Distributed Redis Cluster CRUD E2E Test Image to Kind cluster
+        run: |
+          kind load docker-image ${{ env.CRUD_IMG }} --name e2e-test
+
       - name: Wait for operator to become available
         run: |
           kubectl wait --for=condition=available --timeout=90s deployment/redis-cluster-operator-controller-manager --namespace redis-cluster-operator-system
       # Run the drc_crud tests
-      - name: Run Redis Cluster CRUD E2E Tests
+      - name: Run Redis Cluster CRUD E2E Tests and stream pod logs
         run: |
-          go test ./test/e2e/drc_crud -v -ginkgo.v
+          # Apply the job definition.
+          kubectl apply -f test/e2e/drc_crud/job.yaml
+      
+          # Wait for the pod to be created.
+          echo "Waiting for the job pod to be created..."
+          POD=""
+          for i in {1..30}; do
+            POD=$(kubectl get pods --namespace redis-cluster-operator-system -l job-name=drc-crud-e2e-job -o jsonpath="{.items[0].metadata.name}")
+            if [ -n "$POD" ]; then
+              break
+            fi
+            sleep 2
+          done
+      
+          if [ -z "$POD" ]; then
+            echo "Error: Pod for job 'drc-crud-e2e-job' was not created."
+            exit 1
+          fi
+      
+          echo "Pod found: $POD. Streaming logs from the pod..."
+          # Start streaming logs in the background.
+          kubectl logs --namespace redis-cluster-operator-system -f "$POD" &
+      
+          # Monitor the job status for completion or failure.
+          timeout=1800   # total timeout in seconds
+          interval=60    # check every 60 seconds
+          elapsed=0
+      
+          while true; do
+            succeeded=$(kubectl get job drc-crud-e2e-job --namespace redis-cluster-operator-system -o jsonpath="{.status.succeeded}")
+            failed=$(kubectl get job drc-crud-e2e-job --namespace redis-cluster-operator-system -o jsonpath="{.status.failed}")
+          
+            if [ "$succeeded" == "1" ]; then
+              echo "Job completed successfully."
+              break
+            fi
+      
+            if [ "$failed" == "1" ]; then
+              echo "Job failed."
+              exit 1
+            fi
+      
+            if [ $elapsed -ge $timeout ]; then
+              echo "Timed out waiting for job completion."
+              exit 1
+            fi
+      
+            sleep $interval
+            elapsed=$((elapsed + interval))
+          done
+

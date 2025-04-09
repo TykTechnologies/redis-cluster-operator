@@ -23,13 +23,15 @@ import (
 )
 
 const (
-	Redis5_0_4 = "uhub.service.ucloud.cn/operator/redis:5.0.4-alpine"
-	Redis5_0_6 = "uhub.service.ucloud.cn/operator/redis:5.0.6-alpine"
+	Redis5_0_4  = "uhub.service.ucloud.cn/operator/redis:5.0.4-alpine"
+	Redis5_0_6  = "uhub.service.ucloud.cn/operator/redis:5.0.6-alpine"
+	Redis6_2_6  = "redis:6.2.6"
+	Redis6_2_12 = "redis:6.2.12"
 
 	passwordKey = "password"
 
 	// RedisRenameCommandsDefaultPath default path to volume storing rename commands
-	RedisRenameCommandsDefaultPath = "test/e2e/drc"
+	RedisRenameCommandsDefaultPath = "test/e2e/drc_crud/drc"
 	// RedisRenameCommandsDefaultFile default file name containing rename commands
 	RedisRenameCommandsDefaultFile = "rename.conf"
 )
@@ -72,8 +74,8 @@ func NewDistributedRedisCluster(name, namespace, image, passwordName string, mas
 					corev1.ResourceMemory: resource.MustParse("100Mi"),
 				},
 				Limits: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("200m"),
-					corev1.ResourceMemory: resource.MustParse("200Mi"),
+					corev1.ResourceCPU:    resource.MustParse("250m"),
+					corev1.ResourceMemory: resource.MustParse("300Mi"),
 				},
 			},
 			Storage: &redisv1alpha1.RedisStorage{
@@ -118,11 +120,11 @@ func IsDistributedRedisClusterProperly(f *Framework, drc *redisv1alpha1.Distribu
 			}
 		}
 
-		// password, err := getClusterPassword(f.Client, drc)
-		// if err != nil {
-		// 	f.Logf("getClusterPassword err: %s", err)
-		// 	return err
-		// }
+		password, err := getClusterPassword(f.Client, drc)
+		if err != nil {
+			f.Logf("getClusterPassword err: %s", err)
+			return err
+		}
 		podList, err := f.GetDRCPodsByLabels(getLabels(drc))
 		if err != nil {
 			f.Logf("GetDRCPodsByLabels err: %s", err)
@@ -132,32 +134,32 @@ func IsDistributedRedisClusterProperly(f *Framework, drc *redisv1alpha1.Distribu
 			return testutils.LogAndReturnErrorf("DistributedRedisCluster %s wrong node number, masterSize %d, clusterReplicas %d, got node number %d",
 				drc.Name, drc.Spec.MasterSize, drc.Spec.ClusterReplicas, len(podList.Items))
 		}
-		// redisconf := &config.Redis{
-		// 	DialTimeout:        5000,
-		// 	RenameCommandsFile: renameCommandsFile,
-		// 	RenameCommandsPath: renameCommandsPath,
-		// }
-		// redisAdmin, err := NewRedisAdmin(podList.Items, password, redisconf, logger)
-		// if err != nil {
-		// 	f.Logf("NewRedisAdmin err: %s", err)
-		// 	return err
-		// }
-		// if _, err := redisAdmin.GetClusterInfos(); err != nil {
-		// 	f.Logf("DistributedRedisCluster Cluster nodes: %s", err)
-		// 	return err
-		// }
-		// for addr, c := range redisAdmin.Connections().GetAll() {
-		// 	configs, err := redisAdmin.GetAllConfig(c, addr)
-		// 	if err != nil {
-		// 		f.Logf("DistributedRedisCluster CONFIG GET: %s", err)
-		// 		return err
-		// 	}
-		// 	for key, value := range drc.Spec.Config {
-		// 		if value != configs[key] {
-		// 			return testutils.LogAndReturnErrorf("DistributedRedisCluster %s wrong redis config, key: %s, want: %s, got: %s", drc.Name, key, value, configs[key])
-		// 		}
-		// 	}
-		// }
+		redisconf := &config.Redis{
+			DialTimeout:        5000,
+			RenameCommandsFile: renameCommandsFile,
+			RenameCommandsPath: renameCommandsPath,
+		}
+		redisAdmin, err := NewRedisAdmin(podList.Items, password, redisconf, logger)
+		if err != nil {
+			f.Logf("NewRedisAdmin err: %s", err)
+			return err
+		}
+		if _, err := redisAdmin.GetClusterInfos(); err != nil {
+			f.Logf("DistributedRedisCluster Cluster nodes: %s", err)
+			return err
+		}
+		for addr, c := range redisAdmin.Connections().GetAll() {
+			configs, err := redisAdmin.GetAllConfig(c, addr)
+			if err != nil {
+				f.Logf("DistributedRedisCluster CONFIG GET: %s", err)
+				return err
+			}
+			for key, value := range drc.Spec.Config {
+				if value != configs[key] {
+					return testutils.LogAndReturnErrorf("DistributedRedisCluster %s wrong redis config, key: %s, want: %s, got: %s", drc.Name, key, value, configs[key])
+				}
+			}
+		}
 
 		drc.Spec = result.Spec
 		return nil
@@ -231,7 +233,7 @@ func ResetPassword(drc *redisv1alpha1.DistributedRedisCluster, passwordSecret st
 }
 
 func RollingUpdateDRC(drc *redisv1alpha1.DistributedRedisCluster) {
-	drc.Spec.Image = Redis5_0_6
+	drc.Spec.Image = Redis6_2_12
 }
 
 func DeleteMasterPodForDRC(drc *redisv1alpha1.DistributedRedisCluster, client client.Client) {
