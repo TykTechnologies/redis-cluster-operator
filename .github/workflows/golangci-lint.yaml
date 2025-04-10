@@ -1,0 +1,26 @@
+name: Go Lint
+
+# Switch to only manual triggering for now.
+on:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.23'
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.0.2
+          sudo mv golangci-lint /usr/local/bin/
+
+      - name: Run golangci-lint
+        run: golangci-lint run --timeout 5m
