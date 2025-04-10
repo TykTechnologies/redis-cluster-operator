@@ -96,6 +96,9 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 
 	redisClusterCleanup.Status.LastScheduleTime = &metav1.Time{Time: time.Now()}
+	if err := r.crController.UpdateCRStatus(redisClusterCleanup); err != nil {
+		logger.Error(err, "Failed to update the status", "redisClusterCleanup", redisClusterCleanup)
+	}
 
 	for _, distributedRedisCluster := range distributedRedisClusters.Items {
 		logger.V(3).Info("Checking for expired keys", "cluster", distributedRedisCluster.Name)
@@ -157,6 +160,7 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 
 	redisClusterCleanup.Status.LastSuccessfulTime = &metav1.Time{Time: time.Now()}
+	redisClusterCleanup.Status.Succeed += 1
 	if err := r.crController.UpdateCRStatus(redisClusterCleanup); err != nil {
 		logger.Error(err, "Failed to update the status", "redisClusterCleanup", redisClusterCleanup)
 	}

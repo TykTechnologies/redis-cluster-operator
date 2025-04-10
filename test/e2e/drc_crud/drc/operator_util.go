@@ -107,6 +107,29 @@ func NewDistributedRedisCluster(name, namespace, image, passwordName string, mas
 	}
 }
 
+func NewRedisClusterCleanup(name string, drc *redisv1alpha1.DistributedRedisCluster) *redisv1alpha1.RedisClusterCleanup {
+	return &redisv1alpha1.RedisClusterCleanup{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: drc.Namespace,
+			Annotations: map[string]string{
+				"redis.kun/scope": "cluster-scoped",
+			},
+		},
+		Spec: redisv1alpha1.RedisClusterCleanupSpec{
+			Schedule: "*/10 * * * *",
+			Suspend: false,
+			ScanBatchSize: 200,
+			ExpiredThreshold: 200,
+			Namespaces:        []string{drc.Namespace,}, // List of namespaces where Redis clusters are deployed.
+			KeyPatterns:       []string{"apikey-*"},         // Keys matching these patterns will be processed.
+			ExpirationRegexes: []string{"\"expires\":\\s*(\\d+)"}, // Regex to extract expiration timestamp.
+			SkipPatterns:      []string{"TykJWTSessionID"},    // Keys containing these strings will be skipped.
+		},
+	}
+}
+
+
 func IsDistributedRedisClusterProperly(f *Framework, drc *redisv1alpha1.DistributedRedisCluster) func() error {
 	return func() error {
 		result := &redisv1alpha1.DistributedRedisCluster{}
@@ -184,6 +207,48 @@ func IsDistributedRedisClusterProperly(f *Framework, drc *redisv1alpha1.Distribu
 		return nil
 	}
 }
+
+func IsRedisClusterCleanupProperly(f *Framework, drccleanup *redisv1alpha1.RedisClusterCleanup) func() error {
+	return func() error {
+		result := &redisv1alpha1.RedisClusterCleanup{}
+		if err := f.Client.Get(context.TODO(), types.NamespacedName{
+			Namespace: f.Namespace(),
+			Name:      drccleanup.Name,
+		}, result); err != nil {
+			f.Logf("cannot get RedisClusterCleanup: %s", err.Error())
+			return err
+		}
+
+		// Check if the job has ever been scheduled
+		if result.Status.LastScheduleTime == nil {
+			return testutils.LogAndReturnErrorf("RedisClusterCleanup %s has never been scheduled", drccleanup.Name)
+		}
+
+		// Check if the job has ever succeeded
+		if result.Status.LastSuccessfulTime == nil {
+			return testutils.LogAndReturnErrorf("RedisClusterCleanup %s has never completed successfully", drccleanup.Name)
+		}
+
+		// Determine job status based on timestamps
+		lastScheduled := result.Status.LastScheduleTime.Time
+		lastSucceeded := result.Status.LastSuccessfulTime.Time
+
+		if lastSucceeded.Before(lastScheduled) {
+			// Job was scheduled, but hasn't succeeded yet
+			return testutils.LogAndReturnErrorf("RedisClusterCleanup %s job is still running or has failed", drccleanup.Name)
+		}
+
+		// Check success counter
+		if result.Status.Succeed == 0 {
+			return testutils.LogAndReturnErrorf("RedisClusterCleanup %s has no successful runs", drccleanup.Name)
+		}
+
+		// Everything looks good
+		f.Logf("RedisClusterCleanup %s ran successfully at %v", drccleanup.Name, lastSucceeded)
+		return nil
+	}
+}
+
 
 func getLabels(cluster *redisv1alpha1.DistributedRedisCluster) map[string]string {
 	dynLabels := map[string]string{

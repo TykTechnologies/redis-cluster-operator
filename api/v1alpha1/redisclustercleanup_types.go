@@ -63,6 +63,8 @@ type RedisClusterCleanupStatus struct {
 	LastScheduleTime *metav1.Time `json:"lastScheduleTime,omitempty"`
 	// LastSuccessfulTime is the last time the CronJob completed successfully.
 	LastSuccessfulTime *metav1.Time `json:"lastSuccessfulTime,omitempty"`
+
+	Succeed int64 `json:"Succeed,omitempty"`
 }
 
 // +kubebuilder:resource:shortName="drcc"
