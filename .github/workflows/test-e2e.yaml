@@ -6,8 +6,11 @@ on:
       - main
   pull_request:
     branches:
-      - main  # Automatically trigger workflow for PRs targeting the main branch
-  workflow_dispatch:  # Manual trigger available for any branch
+    # Automatically trigger workflow for PRs targeting the main branch
+      - main  
+  # Manual trigger available for any branch
+  workflow_dispatch:
+
 
 jobs:
   e2e:
