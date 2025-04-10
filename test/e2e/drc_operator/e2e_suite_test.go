@@ -24,7 +24,7 @@ import (
 
 var (
 	namespace    = "redis-cluster-operator-system"
-	projectimage = "tykio/redis-cluster-operator:v0.2.1"
+	projectimage = "tykio/redis-cluster-operator:v0.0.0-teste2e"
 )
 
 func TestE2E(t *testing.T) {

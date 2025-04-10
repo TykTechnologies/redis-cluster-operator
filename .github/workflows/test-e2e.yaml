@@ -6,7 +6,8 @@ on:
       - main
   pull_request:
     branches:
-      - main
+      - main  # Automatically trigger workflow for PRs targeting the main branch
+  workflow_dispatch:  # Manual trigger available for any branch
 
 jobs:
   e2e:
@@ -15,6 +16,7 @@ jobs:
       IMG: tykio/redis-cluster-operator:v0.0.0-teste2e
       CRUD_IMG: tykio/drc-crud-test:v0.0.0-teste2e
       KIND_CLUSTER: e2e-test
+      KIND_CLUSTER_VERSION: v1.31.6
 
     steps:
     # common steps for both tests
@@ -29,13 +31,13 @@ jobs:
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.31.6'
+          version: '${{ env.KIND_CLUSTER_VERSION }}'
 
       - name: Set up Kind cluster
         uses: engineerd/setup-kind@v0.6.2
         with:
           version: "v0.27.0"
-          image: "kindest/node:v1.31.6"
+          image: "kindest/node:${{ env.KIND_CLUSTER_VERSION }}"
           name: ${{ env.KIND_CLUSTER }}
 
       - name: Verify cluster is running
@@ -72,88 +74,41 @@ jobs:
       - name: Wait for operator to become available
         run: |
           kubectl wait --for=condition=available --timeout=90s deployment/redis-cluster-operator-controller-manager --namespace redis-cluster-operator-system
+      
       # Run the drc_crud tests
       - name: Run Redis Cluster CRUD E2E Tests and stream pod logs
         run: |
+          #!/bin/bash
+          set -euo pipefail
+
           # Apply the job definition.
           kubectl apply -f test/e2e/drc_crud/job.yaml
       
-          # Wait for the pod to be created.
-          echo "Waiting for the job pod to be created..."
-          POD=""
-          for i in {1..30}; do
-            POD=$(kubectl get pods --namespace redis-cluster-operator-system -l job-name=drc-crud-e2e-job -o jsonpath="{.items[0].metadata.name}")
-            if [ -n "$POD" ]; then
-              break
-            fi
-            sleep 2
-          done
-      
-          if [ -z "$POD" ]; then
-            echo "Error: Pod for job 'drc-crud-e2e-job' was not created."
+          # Configuration
+          namespace="redis-cluster-operator-system"
+          job_label="job-name=drc-crud-e2e-job"
+          pod_timeout="300s"   # Timeout for pod readiness: 5 minutes
+          job_timeout="1800s"  # Timeout for job completion: 30 minutes
+
+          echo "Waiting for pod with label '$job_label' in namespace '$namespace' to become ready..."
+
+          if kubectl wait --for=condition=ready pod -n "$namespace" -l "$job_label" --timeout="$pod_timeout"; then
+            pod=$(kubectl get pods -n "$namespace" -l "$job_label" -o jsonpath="{.items[0].metadata.name}")
+            echo "Pod '$pod' is in the Ready state."
+          else
+            echo "Error: Timeout reached while waiting for the pod with label '$job_label' to become ready."
             exit 1
           fi
-          
-          # Initialize the timeout and elapsed time
-          timeout=300  # timeout in seconds (5 minutes)
-          elapsed=0    # elapsed time tracker
-          check_interval=5  # interval between checks in seconds
-          # Loop to check if the pod is 1/1 and Running
-          echo "Waiting for pod $POD to be in 1/1 and Running state..."
-          while true; do
-            pod_status=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.containerStatuses[0].ready}")
-            pod_restarts=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.containerStatuses[0].restartCount}")
-            pod_phase=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.phase}")
-            containers=$(kubectl get pod $POD --namespace redis-cluster-operator-system -o jsonpath="{.status.containerStatuses[0].state.running}")
-            
-            echo "Current Pod Status: $pod_status, Restarts: $pod_restarts, Phase: $pod_phase, Containers Running: $containers"
-            
-            # Check if the pod is 1/1 and running
-            if [ "$pod_status" == "true" ] && [ "$pod_phase" == "Running" ]; then
-              echo "Pod $POD is in 1/1 and Running state."
-              break
-            fi
-          
-            # Check if the timeout has been reached
-            if [ $elapsed -ge $timeout ]; then
-              echo "Timeout reached while waiting for pod to be in 1/1 and Running state."
-              exit 1
-            fi
-      
-            # Sleep before checking again
-            sleep $check_interval
-            elapsed=$((elapsed + check_interval))
-          done
-          
-          echo "Streaming logs from the pod..."
-          # Start streaming logs in the background.
-          kubectl logs --namespace redis-cluster-operator-system -f "$POD" &
-      
-          # Monitor the job status for completion or failure.
-          timeout=1800   # total timeout in seconds
-          interval=60    # check every 60 seconds
-          elapsed=0
-      
-          while true; do
-            succeeded=$(kubectl get job drc-crud-e2e-job --namespace redis-cluster-operator-system -o jsonpath="{.status.succeeded}")
-            failed=$(kubectl get job drc-crud-e2e-job --namespace redis-cluster-operator-system -o jsonpath="{.status.failed}")
-          
-            if [ "$succeeded" == "1" ]; then
-              echo "Job completed successfully."
-              break
-            fi
-      
-            if [ "$failed" == "1" ]; then
-              echo "Job failed."
-              exit 1
-            fi
-      
-            if [ $elapsed -ge $timeout ]; then
-              echo "Timed out waiting for job completion."
-              exit 1
-            fi
-      
-            sleep $interval
-            elapsed=$((elapsed + interval))
-          done
 
+          echo "Streaming logs from pod '$pod'..."
+          # It is generally safe, but consider if you need logs captured synchronously.
+          kubectl logs --namespace "$namespace" -f "$pod" &
+
+          echo "Waiting for job 'drc-crud-e2e-job' to complete..."
+          if kubectl wait --for=condition=complete job/drc-crud-e2e-job -n "$namespace" --timeout="$job_timeout"; then
+            echo "Job completed successfully."
+          else
+            echo "Error: The job did not complete successfully within the timeout period."
+            exit 1
+          fi
+        shell: bash
