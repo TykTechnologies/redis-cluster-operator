@@ -119,12 +119,12 @@ func NewRedisClusterCleanup(name string, drc *redisv1alpha1.DistributedRedisClus
 		Spec: redisv1alpha1.RedisClusterCleanupSpec{
 			Schedule: "*/10 * * * *",
 			Suspend: false,
-			ScanBatchSize: 200,
-			ExpiredThreshold: 200,
+			ScanBatchSize: 100,
+			ExpiredThreshold: 100,
 			Namespaces:        []string{drc.Namespace,}, // List of namespaces where Redis clusters are deployed.
 			KeyPatterns:       []string{"apikey-*"},         // Keys matching these patterns will be processed.
 			ExpirationRegexes: []string{"\"expires\":\\s*(\\d+)"}, // Regex to extract expiration timestamp.
-			SkipPatterns:      []string{"TykJWTSessionID"},    // Keys containing these strings will be skipped.
+			SkipPatterns:      []string{"\"TykJWTSessionID\""},    // Keys containing these strings will be skipped.
 		},
 	}
 }

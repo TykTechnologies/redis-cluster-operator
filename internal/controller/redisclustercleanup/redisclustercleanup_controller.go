@@ -28,6 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlController "sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -188,7 +191,24 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *RedisClusterCleanupReconciler) SetupWithManager(mgr ctrl.Manager) error {
+
+	pred := predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+
+			r.Log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).V(5).Info("Call UpdateFunc")
+			// Ignore updates to CR status in which case metadata.Generation does not change
+			if e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration() {
+				r.Log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).Info("Generation change return true",
+					"old", e.ObjectOld, "new", e.ObjectNew)
+				return true
+			}
+			return false
+		},
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&redisv1alpha1.RedisClusterCleanup{}).
+		WithEventFilter(pred).
+		WithOptions(ctrlController.Options{}).
 		Complete(r)
 }
