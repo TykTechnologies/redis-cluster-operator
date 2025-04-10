@@ -55,20 +55,46 @@ spec:
           spec:
             description: RedisClusterCleanupSpec defines the desired state of RedisClusterCleanup
             properties:
+              expirationRegexes:
+                description: |-
+                  ExpirationRegexes holds one or more regexes to extract the expiration value.
+                  For example: ["\"expires\":\\s*(\\d+)"]
+                items:
+                  type: string
+                type: array
               expiredThreshold:
                 default: 200
                 description: ExpiredThreshold defines the minimum number of expired
                   keys that triggers a cleanup.
                 type: integer
+              keyPatterns:
+                description: |-
+                  KeyPatterns holds one or more patterns for SCAN operations.
+                  For example, ["apikey-*", "session-*"]
+                items:
+                  type: string
+                type: array
               namespaces:
                 items:
                   type: string
                 minItems: 1
                 type: array
+              scanBatchSize:
+                default: 200
+                description: ExpiredThreshold defines the minimum number of expired
+                  keys that triggers a cleanup.
+                type: integer
               schedule:
                 description: Schedule is a cron expression to run the cleanup job.
                 pattern: ^(\S+\s+){4}\S+$
                 type: string
+              skipPatterns:
+                description: |-
+                  SkipPatterns holds substrings or patterns that if found in a key's value will skip deletion.
+                  For example, ["TykJWTSessionID"]
+                items:
+                  type: string
+                type: array
               suspend:
                 default: false
                 type: boolean
