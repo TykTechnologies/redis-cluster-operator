@@ -36,6 +36,7 @@ with different k8s nodes as master.
   - [Custom Service](#custom-service)
   - [Custom Resource](#custom-resource)
 - [Contributing](#contributing)
+- [End to End Tests](#end-to-end-tests)
 
 ## Getting Started
 
@@ -259,6 +260,6 @@ $ kubectl create -f config/samples/example/custom-resources.yaml
 
 More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
 
-## End to end tests
+## End to End Tests
 
 see [e2e](/test/e2e/README.md)

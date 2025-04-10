@@ -10,7 +10,7 @@ This directory contains end-to-end tests for the `redis-cluster-operator` using 
 - Deploys the operator
 - Verifies the controller-manager pod is running
 - Cleans up the test namespace after execution
-### DRC CRUD test
+#### DRC CRUD test
 Below is a concise documentation of what the tests verify:
 
 - Creates a DistributedRedisCluster resource with a random name and password; waits for the cluster to stabilize and seeds test data.
