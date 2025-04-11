@@ -60,7 +60,7 @@ func (g *GoRedis) StuffingData(round, n int) error {
 				// 1400 keys with just an expired timestamp.
 				if j%5 == 0 {
 					value = fmt.Sprintf("{\"expires\": %d}", futureTime)
-				} else if j%4 == 0 && j%5 != 0 {
+				} else if j%8 == 0 && j%5 != 0 {
 					// Use a dummy session and an expired timestamp.
 					value = fmt.Sprintf("{\"TykJWTSessionID\": \"dummy-session\", \"expires\": %d}", expiredTime)
 				} else {

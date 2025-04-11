@@ -39,105 +39,105 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 		f.Logf("%s DBSIZE: %d", name, dbsize)
 	})
 
-	// Context("when the DistributedRedisCluster is created", func() {
-	// 	It("should change redis config for a DistributedRedisCluster", func() {
-	// 		drctest.ChangeDRCRedisConfig(drc)
-	// 		Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
-	// 		Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
-	// 		Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
-	// 	})
-	// 	It("should recover from accidentally deleting master pods", func() {
-	// 		// Sleep to give time for DRC to stabilize after any configuration changes
-	// 		time.Sleep(30 * time.Second)
-	// 		drctest.DeleteMasterPodForDRC(drc, f.Client)
-	// 		Eventually(drctest.IsDRCPodBeDeleted(f, drc), "5m", "10s").ShouldNot(HaveOccurred())
+	Context("when the DistributedRedisCluster is created", func() {
+		It("should change redis config for a DistributedRedisCluster", func() {
+			drctest.ChangeDRCRedisConfig(drc)
+			Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
+			Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
+			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+		})
+		It("should recover from accidentally deleting master pods", func() {
+			// Sleep to give time for DRC to stabilize after any configuration changes
+			time.Sleep(30 * time.Second)
+			drctest.DeleteMasterPodForDRC(drc, f.Client)
+			Eventually(drctest.IsDRCPodBeDeleted(f, drc), "5m", "10s").ShouldNot(HaveOccurred())
 
-	// 		// Sleep to allow time for recovery after pod deletion
-	// 		time.Sleep(60 * time.Second)
+			// Sleep to allow time for recovery after pod deletion
+			time.Sleep(60 * time.Second)
 
-	// 		Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
+			Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
 
-	// 		// Sleep to allow time for DB client recovery
-	// 		time.Sleep(30 * time.Second)
+			// Sleep to allow time for DB client recovery
+			time.Sleep(30 * time.Second)
 
-	// 		goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
-	// 		Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
-	// 	})
-	// 	It("should scale up a DistributedRedisCluster", func() {
-	// 		// Sleep to give time for DRC to stabilize before scaling
-	// 		time.Sleep(30 * time.Second)
-	// 		drctest.ScaleUPDRC(drc)
-	// 		Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
+			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
+			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+		})
+		It("should scale up a DistributedRedisCluster", func() {
+			// Sleep to give time for DRC to stabilize before scaling
+			time.Sleep(30 * time.Second)
+			drctest.ScaleUPDRC(drc)
+			Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
 
-	// 		// Sleep to allow time for cluster scaling
-	// 		time.Sleep(60 * time.Second)
+			// Sleep to allow time for cluster scaling
+			time.Sleep(60 * time.Second)
 
-	// 		Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
+			Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
 
-	// 		// Sleep to allow time for a DB client to stabilize after scaling
-	// 		time.Sleep(30 * time.Second)
+			// Sleep to allow time for a DB client to stabilize after scaling
+			time.Sleep(30 * time.Second)
 
-	// 		goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
-	// 		Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
-	// 	})
-	// 	Context("when the scale up succeeded", func() {
-	// 		It("should scale down a DistributedRedisCluster", func() {
-	// 			// Sleep to give time for DRC to stabilize before scaling down
-	// 			time.Sleep(30 * time.Second)
+			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
+			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+		})
+		Context("when the scale up succeeded", func() {
+			It("should scale down a DistributedRedisCluster", func() {
+				// Sleep to give time for DRC to stabilize before scaling down
+				time.Sleep(30 * time.Second)
 
-	// 			drctest.ScaleUPDown(drc)
-	// 			Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
+				drctest.ScaleUPDown(drc)
+				Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
 
-	// 			// Sleep to allow time for cluster scaling down
-	// 			time.Sleep(60 * time.Second)
+				// Sleep to allow time for cluster scaling down
+				time.Sleep(60 * time.Second)
 
-	// 			Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
+				Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
 
-	// 			// Sleep to allow time for the DB client to stabilize after scaling down
-	// 			time.Sleep(30 * time.Second)
+				// Sleep to allow time for the DB client to stabilize after scaling down
+				time.Sleep(30 * time.Second)
 
-	// 			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
-	// 			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
-	// 		})
-	// 	})
-	// 	It("should reset the DistributedRedisCluster password", func() {
-	// 		// Sleep to allow time for DRC to stabilize before password reset
-	// 		time.Sleep(30 * time.Second)
-	// 		newPassword := utils.RandString(8)
-	// 		Ω(f.CreateRedisClusterPassword(f.NewPasswordName(), newPassword)).Should(Succeed())
-	// 		drctest.ResetPassword(drc, f.NewPasswordName())
-	// 		Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
+				goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
+				Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+			})
+		})
+		It("should reset the DistributedRedisCluster password", func() {
+			// Sleep to allow time for DRC to stabilize before password reset
+			time.Sleep(30 * time.Second)
+			newPassword := utils.RandString(8)
+			Ω(f.CreateRedisClusterPassword(f.NewPasswordName(), newPassword)).Should(Succeed())
+			drctest.ResetPassword(drc, f.NewPasswordName())
+			Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
 
-	// 		// Sleep to allow time for DRC to stabilize after password reset
-	// 		time.Sleep(60 * time.Second)
+			// Sleep to allow time for DRC to stabilize after password reset
+			time.Sleep(60 * time.Second)
 
-	// 		Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
+			Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
 
-	// 		// Sleep to allow time for the DB client to stabilize after password reset
-	// 		time.Sleep(30 * time.Second)
+			// Sleep to allow time for the DB client to stabilize after password reset
+			time.Sleep(30 * time.Second)
 
-	// 		goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), newPassword)
-	// 		Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
-	// 	})
-	// 	It("should update the DistributedRedisCluster minor version", func() {
-	// 		// Sleep to give time for DRC to stabilize before the update
-	// 		time.Sleep(30 * time.Second)
-	// 		drctest.RollingUpdateDRC(drc)
-	// 		Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
+			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), newPassword)
+			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+		})
+		It("should update the DistributedRedisCluster minor version", func() {
+			// Sleep to give time for DRC to stabilize before the update
+			time.Sleep(30 * time.Second)
+			drctest.RollingUpdateDRC(drc)
+			Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
 
-	// 		// Sleep to allow time for the DRC to stabilize after the update
-	// 		time.Sleep(60 * time.Second)
+			// Sleep to allow time for the DRC to stabilize after the update
+			time.Sleep(60 * time.Second)
 
-	// 		Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
+			Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
 
-	// 		// Sleep to allow time for the DB client to stabilize after update
-	// 		time.Sleep(30 * time.Second)
+			// Sleep to allow time for the DB client to stabilize after update
+			time.Sleep(30 * time.Second)
 
-	// 		goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
-	// 		Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
-	// 	})
+			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
+			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+		})
 		Context("when the DistributedRedisCluster has passed all tests", func() {
-			It("should create a RedisClusterCleanup",func(){
+			It("should create a RedisClusterCleanup", func() {
 				time.Sleep(30 * time.Second)
 				name := utils.RandString(8)
 				drccleanup := drctest.NewRedisClusterCleanup(name, drc)
@@ -146,14 +146,14 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 				time.Sleep(60 * time.Second)
 
 				Eventually(drctest.IsRedisClusterCleanupProperly(f, drccleanup), "15m", "10s").ShouldNot(HaveOccurred())
-				
+
 				time.Sleep(30 * time.Second)
-				
+
 				goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 				// we keep non exipired keys and the keys with skip pattern
-				Expect(drctest.IsDBSizeConsistent(2400, goredis)).NotTo(HaveOccurred())
+				Expect(drctest.IsDBSizeConsistent(1800, goredis)).NotTo(HaveOccurred())
 			})
 		})
-		
+
 	})
-// })
+})
