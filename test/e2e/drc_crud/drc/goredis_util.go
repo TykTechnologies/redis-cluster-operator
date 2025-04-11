@@ -56,8 +56,8 @@ func (g *GoRedis) StuffingData(round, n int) error {
 				var value string
 				// 5 and 8 are random numbers.
 				// 400 keys with a future expiration timestamp.
-				// 400 keys with a dummy session and an expired timestamp.
-				// 1200 keys with just an expired timestamp.
+				// 200 keys with a dummy session and an expired timestamp.
+				// 1400 keys with just an expired timestamp.
 				if j%5 == 0 {
 					value = fmt.Sprintf("{\"expires\": %d}", futureTime)
 				} else if j%8 == 0 && j%5 != 0 {
