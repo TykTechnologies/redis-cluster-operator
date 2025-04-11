@@ -30,6 +30,13 @@ const (
 
 	passwordKey = "password"
 
+	// exporterImage = "uhub.service.ucloud.cn/operator/redis_exporter:latest"
+	// BackupImage = "uhub.service.ucloud.cn/operator/redis-tools:5.0.4"
+	// S3ID        = "AWS_ACCESS_KEY_ID"
+	// S3KEY       = "AWS_SECRET_ACCESS_KEY"
+	// S3ENDPOINT  = "S3_ENDPOINT"
+	// S3BUCKET    = "S3_BUCKET"
+
 	// RedisRenameCommandsDefaultPath default path to volume storing rename commands
 	RedisRenameCommandsDefaultPath = "test/e2e/drc_crud/drc"
 	// RedisRenameCommandsDefaultFile default file name containing rename commands
@@ -80,10 +87,22 @@ func NewDistributedRedisCluster(name, namespace, image, passwordName string, mas
 			},
 			Storage: &redisv1alpha1.RedisStorage{
 				Type:        "persistent-claim",
-				Size:        resource.MustParse("10Gi"),
+				Size:        resource.MustParse("2Gi"),
 				Class:       storageClassName,
 				DeleteClaim: true,
 			},
+			// Monitor: &redisv1alpha1.AgentSpec{
+			// 	Image: exporterImage,
+			// 	Prometheus: &redisv1alpha1.PrometheusSpec{
+			// 		Port: 9121,
+			// 	},
+			// },
+			// Annotations: map[string]string{
+			// 	"prometheus.io/app-metrics":      "true",
+			// 	"prometheus.io/app-metrics-path": "/metrics",
+			// 	"prometheus.io/app-metrics-port": "9121",
+			// 	"prometheus.io/scrape":           "true",
+			// },
 		},
 	}
 }
@@ -290,3 +309,72 @@ func IsDBSizeConsistent(originalDBSize int64, goredis *GoRedis) error {
 	}
 	return nil
 }
+
+// func RestoreDRC(drc *redisv1alpha1.DistributedRedisCluster, drcb *redisv1alpha1.RedisClusterBackup) *redisv1alpha1.DistributedRedisCluster {
+// 	name := RandString(8)
+// 	return &redisv1alpha1.DistributedRedisCluster{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Name:      name,
+// 			Namespace: drc.Namespace,
+// 			Annotations: map[string]string{
+// 				"redis.kun/scope": "cluster-scoped",
+// 			},
+// 		},
+// 		Spec: redisv1alpha1.DistributedRedisClusterSpec{
+// 			Image:           drc.Spec.Image,
+// 			MasterSize:      drc.Spec.MasterSize,
+// 			ClusterReplicas: drc.Spec.ClusterReplicas,
+// 			Config:          drc.Spec.Config,
+// 			PasswordSecret:  drc.Spec.PasswordSecret,
+// 			Resources:       drc.Spec.Resources,
+// 			Storage:         drc.Spec.Storage,
+// 			Monitor:         drc.Spec.Monitor,
+// 			Annotations:     drc.Spec.Annotations,
+// 			Init: &redisv1alpha1.InitSpec{BackupSource: &redisv1alpha1.BackupSourceSpec{
+// 				Namespace: drcb.Namespace,
+// 				Name:      drcb.Name,
+// 			}},
+// 		},
+// 	}
+// }
+
+// func NewRedisClusterBackup(name, namespace, image, drcName, storageSecretName, s3Endpoint, s3Bucket string) *redisv1alpha1.RedisClusterBackup {
+// 	return &redisv1alpha1.RedisClusterBackup{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Name:      name,
+// 			Namespace: namespace,
+// 			Annotations: map[string]string{
+// 				"redis.kun/scope": "cluster-scoped",
+// 			},
+// 		},
+// 		Spec: redisv1alpha1.RedisClusterBackupSpec{
+// 			Image:            image,
+// 			RedisClusterName: drcName,
+// 			Backend: store.Backend{
+// 				StorageSecretName: storageSecretName,
+// 				S3: &store.S3Spec{
+// 					Endpoint: s3Endpoint,
+// 					Bucket:   s3Bucket,
+// 				},
+// 			},
+// 		},
+// 	}
+
+// }
+
+// func IsRedisClusterBackupProperly(f *Framework, drcb *redisv1alpha1.RedisClusterBackup) func() error {
+// 	return func() error {
+// 		result := &redisv1alpha1.RedisClusterBackup{}
+// 		if err := f.Client.Get(context.TODO(), types.NamespacedName{
+// 			Namespace: f.Namespace(),
+// 			Name:      drcb.Name,
+// 		}, result); err != nil {
+// 			f.Logf("can not get DistributedRedisCluster err: %s", err.Error())
+// 			return err
+// 		}
+// 		if result.Status.Phase != redisv1alpha1.BackupPhaseSucceeded {
+// 			return LogAndReturnErrorf("RedisClusterBackup %s status not Succeeded, current: %s", drcb.Name, result.Status.Phase)
+// 		}
+// 		return nil
+// 	}
+// }

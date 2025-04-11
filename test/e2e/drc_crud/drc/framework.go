@@ -6,7 +6,8 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
+
+	// rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -169,68 +170,6 @@ func (f *Framework) deleteTestNamespace() error {
 	return f.Client.Delete(context.TODO(), nsSpec)
 }
 
-func (f *Framework) createRBAC() error {
-	role := &rbacv1.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      f.roleName(),
-			Namespace: f.nameSpace,
-		},
-		Rules: []rbacv1.PolicyRule{
-			{
-				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
-				APIGroups: []string{""},
-				Resources: []string{"pods", "secrets", "endpoints",
-					"persistentvolumeclaims", "configmaps", "services", "namespaces"},
-			},
-			{
-				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
-				APIGroups: []string{"batch"},
-				Resources: []string{"jobs"},
-			},
-			{
-				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
-				APIGroups: []string{"apps"},
-				Resources: []string{"deployments", "replicasets", "statefulsets"},
-			},
-			{
-				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
-				APIGroups: []string{"redis.kun"},
-				Resources: []string{"*"},
-			},
-		},
-	}
-	if err := f.Client.Create(context.TODO(), role); err != nil {
-		return err
-	}
-
-	rbSpec := &rbacv1.RoleBinding{
-		ObjectMeta: metav1.ObjectMeta{Name: f.rolebindingName(), Namespace: f.nameSpace},
-		RoleRef: rbacv1.RoleRef{
-			APIGroup: "rbac.authorization.k8s.io",
-			Kind:     "ClusterRole",
-			Name:     f.roleName(),
-		},
-		Subjects: []rbacv1.Subject{{
-			APIGroup:  "rbac.authorization.k8s.io",
-			Kind:      "Group",
-			Name:      fmt.Sprintf("system:serviceaccounts:%s", f.nameSpace),
-			Namespace: f.nameSpace,
-		}},
-	}
-	if err := f.Client.Create(context.TODO(), rbSpec); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (f *Framework) rolebindingName() string {
-	return fmt.Sprintf("cr-redis~g-%s", f.nameSpace)
-}
-
-func (f *Framework) roleName() string {
-	return "cr-redis"
-}
-
 func (f *Framework) PasswordName() string {
 	return "redis-admin-passwd"
 }
@@ -239,18 +178,120 @@ func (f *Framework) NewPasswordName() string {
 	return "redis-admin-newpasswd"
 }
 
-func (f *Framework) deleteRBAC() error {
-	rbSpec := &rbacv1.RoleBinding{
-		ObjectMeta: metav1.ObjectMeta{Name: f.rolebindingName(), Namespace: f.nameSpace},
-	}
-	if err := f.Client.Delete(context.TODO(), rbSpec); err != nil {
-		return err
-	}
-	role := &rbacv1.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      f.roleName(),
-			Namespace: f.nameSpace,
-		},
-	}
-	return f.Client.Delete(context.TODO(), role)
-}
+// func (f *Framework) deleteRBAC() error {
+// 	rbSpec := &rbacv1.RoleBinding{
+// 		ObjectMeta: metav1.ObjectMeta{Name: f.rolebindingName(), Namespace: f.nameSpace},
+// 	}
+// 	if err := f.Client.Delete(context.TODO(), rbSpec); err != nil {
+// 		return err
+// 	}
+// 	role := &rbacv1.ClusterRole{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Name:      f.roleName(),
+// 			Namespace: f.nameSpace,
+// 		},
+// 	}
+// 	return f.Client.Delete(context.TODO(), role)
+// }
+
+// // CreateRedisClusterBackup creates a RedisClusterBackup in test namespace
+// func (f *Framework) CreateRedisClusterBackup(instance *redisv1alpha1.RedisClusterBackup) error {
+// 	f.Logf("Creating RedisClusterBackup %s", instance.Name)
+// 	result := &redisv1alpha1.RedisClusterBackup{}
+// 	err := f.Client.Get(context.TODO(), types.NamespacedName{
+// 		Namespace: f.Namespace(),
+// 		Name:      instance.Name,
+// 	}, result)
+// 	if errors.IsNotFound(err) {
+// 		return f.Client.Create(context.TODO(), instance)
+// 	}
+// 	return err
+// }
+
+// // CreateS3Secret creates a secret for RedisClusterBackup
+// func (f *Framework) CreateS3Secret(id, key string) error {
+// 	name := f.S3SecretName()
+// 	f.Logf("Creating RedisClusterBackup secret %s", name)
+// 	secret := &corev1.Secret{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Name:      name,
+// 			Namespace: f.Namespace(),
+// 		},
+// 		StringData: map[string]string{
+// 			S3ID:  id,
+// 			S3KEY: key,
+// 		},
+// 		Type: "Opaque",
+// 	}
+// 	result := &corev1.Secret{}
+// 	err := f.Client.Get(context.TODO(), types.NamespacedName{
+// 		Namespace: f.Namespace(),
+// 		Name:      name,
+// 	}, result)
+// 	if errors.IsNotFound(err) {
+// 		return f.Client.Create(context.TODO(), secret)
+// 	}
+// 	return err
+// }
+
+// func (f *Framework) createRBAC() error {
+// 	role := &rbacv1.ClusterRole{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Name:      f.roleName(),
+// 			Namespace: f.nameSpace,
+// 		},
+// 		Rules: []rbacv1.PolicyRule{
+// 			{
+// 				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
+// 				APIGroups: []string{""},
+// 				Resources: []string{"pods", "secrets", "endpoints",
+// 					"persistentvolumeclaims", "configmaps", "services", "namespaces"},
+// 			},
+// 			{
+// 				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
+// 				APIGroups: []string{"batch"},
+// 				Resources: []string{"jobs"},
+// 			},
+// 			{
+// 				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
+// 				APIGroups: []string{"apps"},
+// 				Resources: []string{"deployments", "replicasets", "statefulsets"},
+// 			},
+// 			{
+// 				Verbs:     []string{"get", "list", "watch", "delete", "create", "patch", "update"},
+// 				APIGroups: []string{"redis.kun"},
+// 				Resources: []string{"*"},
+// 			},
+// 		},
+// 	}
+// 	if err := f.Client.Create(context.TODO(), role); err != nil {
+// 		return err
+// 	}
+
+// 	rbSpec := &rbacv1.RoleBinding{
+// 		ObjectMeta: metav1.ObjectMeta{Name: f.rolebindingName(), Namespace: f.nameSpace},
+// 		RoleRef: rbacv1.RoleRef{
+// 			APIGroup: "rbac.authorization.k8s.io",
+// 			Kind:     "ClusterRole",
+// 			Name:     f.roleName(),
+// 		},
+// 		Subjects: []rbacv1.Subject{{
+// 			APIGroup:  "rbac.authorization.k8s.io",
+// 			Kind:      "Group",
+// 			Name:      fmt.Sprintf("system:serviceaccounts:%s", f.nameSpace),
+// 			Namespace: f.nameSpace,
+// 		}},
+// 	}
+// 	if err := f.Client.Create(context.TODO(), rbSpec); err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
+
+// func (f *Framework) rolebindingName() string {
+// 	return fmt.Sprintf("cr-redis~g-%s", f.nameSpace)
+// }
+
+// func (f *Framework) roleName() string {
+// 	return "cr-redis"
+// }

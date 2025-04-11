@@ -16,6 +16,7 @@ with different k8s nodes as master.
 ## Table of Contents
 
 - [Overview](#redis-cluster-operator)
+- [Features](#features)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [To Deploy on the Cluster](#to-deploy-on-the-cluster)
@@ -37,6 +38,22 @@ with different k8s nodes as master.
   - [Custom Resource](#custom-resource)
 - [Contributing](#contributing)
 - [End to End Tests](#end-to-end-tests)
+
+## Features
+
+- __Customize the number of master nodes and the number of replica nodes per master__
+
+- __Password__
+
+- __Safely Scaling the Redis Cluster__
+
+<!-- - __Backup and Restore__ -->
+
+- __Persistent Volume__
+
+- __Custom Configuration__
+
+<!-- - __Prometheus Discovery__ -->
 
 ## Getting Started
 
