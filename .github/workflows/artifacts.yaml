@@ -11,6 +11,10 @@ jobs:
     outputs:
       on_main: ${{ steps.contains_tag.outputs.retval }}
     steps:
+      # refer to https://github.com/rickstaa/action-contains-tag/pull/18 for more info
+      - name: Workaround regression action-contains-tag due to git update
+        run: git config --global remote.origin.followRemoteHEAD never
+
       - name: Git checkout
         uses: actions/checkout@v4
         with:
