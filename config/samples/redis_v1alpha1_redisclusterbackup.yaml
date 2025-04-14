@@ -1,0 +1,9 @@
+apiVersion: redis.kun/v1alpha1
+kind: RedisClusterBackup
+metadata:
+  labels:
+    app.kubernetes.io/name: redis-cluster-operator-old
+    app.kubernetes.io/managed-by: kustomize
+  name: redisclusterbackup-sample
+spec:
+  # TODO(user): Add fields here

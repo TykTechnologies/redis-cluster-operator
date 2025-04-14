@@ -1,0 +1,115 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main  # Automatically trigger workflow for PRs targeting the main branch
+  # workflow_dispatch:  # Manual trigger available for any branch
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      IMG: tykio/redis-cluster-operator:v0.0.0-teste2e
+      CRUD_IMG: tykio/drc-crud-test:v0.0.0-teste2e
+      KIND_CLUSTER: e2e-test
+      KIND_CLUSTER_VERSION: v1.31.6
+      KIND_CLUSTER_IMAGE: kindest/node:v1.31.6@sha256:28b7cbb993dfe093c76641a0c95807637213c9109b761f1d422c2400e22b8e87
+
+    steps:
+    # common steps for both tests
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.23'
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '${{ env.KIND_CLUSTER_VERSION }}'
+
+      - name: Set up Kind cluster
+        uses: engineerd/setup-kind@v0.6.2
+        with:
+          version: "v0.27.0"
+          image: ${{ env.KIND_CLUSTER_IMAGE }}
+          name: ${{ env.KIND_CLUSTER }}
+
+      - name: Verify cluster is running
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      # run the drc_operator e2e tests
+      - name: Run Redis Cluster Operator E2E Tests
+        run: |
+          go test ./test/e2e/drc_operator -v -ginkgo.v
+
+      # steps for drc_crud test
+      - name: Load Docker image into Kind cluster
+        run: |
+          kind load docker-image ${{ env.IMG }} --name e2e-test
+
+      - name: Install CRDs
+        run: |
+          make install
+
+      - name: Deploy controller-manager (operator)
+        run: |
+          make deploy IMG=${{ env.IMG }}
+
+      - name: Build Distributed Redis Cluster CRUD E2E Test Image
+        run: |
+          make docker-build-e2e IMG=${{ env.CRUD_IMG }}
+
+      - name: Load Distributed Redis Cluster CRUD E2E Test Image to Kind cluster
+        run: |
+          kind load docker-image ${{ env.CRUD_IMG }} --name e2e-test
+
+      - name: Wait for operator to become available
+        run: |
+          kubectl wait --for=condition=available --timeout=90s deployment/redis-cluster-operator-controller-manager --namespace redis-cluster-operator-system
+      
+      # Run the drc_crud tests
+      - name: Run Redis Cluster CRUD E2E Tests and stream pod logs
+        run: |
+          #!/bin/bash
+          set -euo pipefail
+
+          # Apply the job definition.
+          kubectl apply -f test/e2e/drc_crud/job.yaml
+      
+          # Configuration
+          namespace="redis-cluster-operator-system"
+          job_label="job-name=drc-crud-e2e-job"
+          pod_timeout="300s"   # Timeout for pod readiness: 5 minutes
+          job_timeout="1800s"  # Timeout for job completion: 30 minutes
+
+          echo "Waiting for pod with label '$job_label' in namespace '$namespace' to become ready..."
+
+          if kubectl wait --for=condition=ready pod -n "$namespace" -l "$job_label" --timeout="$pod_timeout"; then
+            pod=$(kubectl get pods -n "$namespace" -l "$job_label" -o jsonpath="{.items[0].metadata.name}")
+            echo "Pod '$pod' is in the Ready state."
+          else
+            echo "Error: Timeout reached while waiting for the pod with label '$job_label' to become ready."
+            exit 1
+          fi
+
+          echo "Streaming logs from pod '$pod'..."
+          # It is generally safe, but consider if you need logs captured synchronously.
+          kubectl logs --namespace "$namespace" -f "$pod" &
+
+          echo "Waiting for job 'drc-crud-e2e-job' to complete..."
+          if kubectl wait --for=condition=complete job/drc-crud-e2e-job -n "$namespace" --timeout="$job_timeout"; then
+            echo "Job completed successfully."
+          else
+            echo "Error: The job did not complete successfully within the timeout period."
+            exit 1
+          fi
+        shell: bash

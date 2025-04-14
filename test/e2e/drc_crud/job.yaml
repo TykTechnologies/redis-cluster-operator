@@ -1,0 +1,50 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # Unique name for the ClusterRole
+  name: drc-crud-job-access
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: drc-crud-job-binding
+subjects:
+  - kind: ServiceAccount
+    name: redis-cluster-operator-controller-manager
+    namespace: redis-cluster-operator-system
+roleRef:
+  kind: ClusterRole
+  name: drc-crud-job-access
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: drc-crud-e2e-job
+  namespace: redis-cluster-operator-system
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      name: drc-drud-e2e-pod
+    spec:
+      serviceAccountName: redis-cluster-operator-controller-manager
+      containers:
+        - name: drc-crud
+          image: tykio/drc-crud-test:v0.0.0-teste2e
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: redisconf
+              mountPath: /etc/redisconf
+          args:
+            - --rename-command-path=/etc/redisconf
+            - --rename-command-file=redis.conf
+      volumes:
+        - name: redisconf
+          configMap:
+            name: redis-cluster-operator-redisconf
+      restartPolicy: Never
