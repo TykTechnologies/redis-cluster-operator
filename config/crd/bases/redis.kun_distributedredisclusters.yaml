@@ -16,7 +16,29 @@ spec:
     singular: distributedrediscluster
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: The number of redis master node in the ensemble
+      jsonPath: .spec.masterSize
+      name: MasterSize
+      type: integer
+    - description: The status of redis cluster
+      jsonPath: .status.status
+      name: Status
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: The current master number of redis cluster
+      jsonPath: .status.numberOfMaster
+      name: CurrentMasters
+      priority: 1
+      type: integer
+    - description: The image of redis cluster
+      jsonPath: .spec.image
+      name: Images
+      priority: 1
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: DistributedRedisCluster is the Schema for the DistributedRedisClusters

@@ -165,6 +165,11 @@ type RedisClusterNode struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete;patch
 // +kubebuilder:rbac:groups=apps,resources=replicasets,verbs=get;list;watch;create;update;delete;patch
 // +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;delete;patch
+// +kubebuilder:printcolumn:name="MasterSize",type="integer",JSONPath=".spec.masterSize",description="The number of redis master node in the ensemble"
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.status",description="The status of redis cluster"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="CurrentMasters",type="integer",JSONPath=".status.numberOfMaster",description="The current master number of redis cluster",priority=1
+// +kubebuilder:printcolumn:name="Images",type="string",JSONPath=".spec.image",description="The image of redis cluster",priority=1
 
 // DistributedRedisCluster is the Schema for the DistributedRedisClusters API
 type DistributedRedisCluster struct {
