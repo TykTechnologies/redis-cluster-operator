@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	// rbacv1 "k8s.io/api/rbac/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-
-	// rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -90,6 +89,20 @@ func (f *Framework) Namespace() string {
 func (f *Framework) CreateRedisCluster(instance *redisv1alpha1.DistributedRedisCluster) error {
 	f.Logf("Creating DistributedRedisCluster %s", instance.Name)
 	result := &redisv1alpha1.DistributedRedisCluster{}
+	err := f.Client.Get(context.TODO(), types.NamespacedName{
+		Namespace: f.Namespace(),
+		Name:      instance.Name,
+	}, result)
+	if errors.IsNotFound(err) {
+		return f.Client.Create(context.TODO(), instance)
+	}
+	return err
+}
+
+// CreateRedisClusterCleaup creates a RedisClusterCleanup in test namespace
+func (f *Framework) CreateRedisClusterCleaup(instance *redisv1alpha1.RedisClusterCleanup) error {
+	f.Logf("Creating RedisClusterCleaup %s", instance.Name)
+	result := &redisv1alpha1.RedisClusterCleanup{}
 	err := f.Client.Get(context.TODO(), types.NamespacedName{
 		Namespace: f.Namespace(),
 		Name:      instance.Name,

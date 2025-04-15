@@ -1,0 +1,27 @@
+# permissions for end users to edit redisclustercleanups.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: redis-cluster-operator-old
+    app.kubernetes.io/managed-by: kustomize
+  name: redisclustercleanup-editor-role
+rules:
+- apiGroups:
+  - redis.kun
+  resources:
+  - redisclustercleanups
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - redis.kun
+  resources:
+  - redisclustercleanups/status
+  verbs:
+  - get

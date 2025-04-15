@@ -41,6 +41,7 @@ import (
 	"github.com/TykTechnologies/redis-cluster-operator/internal/config"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/distributedrediscluster"
 	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/redisclusterbackup"
+	"github.com/TykTechnologies/redis-cluster-operator/internal/controller/redisclustercleanup"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -172,6 +173,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	redisclustercleanupreconciler := redisclustercleanup.NewReconcileRedisClusterCleanup(mgr)
+	if err = redisclustercleanupreconciler.SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "RedisClusterCleanup")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

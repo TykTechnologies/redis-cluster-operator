@@ -2,4 +2,5 @@
 resources:
 - redis_v1alpha1_distributedrediscluster.yaml
 - redis_v1alpha1_redisclusterbackup.yaml
+- redis_v1alpha1_redisclustercleanup.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
