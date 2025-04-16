@@ -28,7 +28,6 @@ with different k8s nodes as master.
   - [Deploy a Sample Redis Cluster](#deploy-a-sample-redis-cluster)
   - [Scaling Up the Redis Cluster](#scaling-up-the-redis-cluster)
   - [Scaling Down the Redis Cluster](#scaling-down-the-redis-cluster)
-  - [Create cleanup job](#create-cleanup-job)
   - [Backup and Restore](#backup-and-restore)
   - [Prometheus Discovery](#prometheus-discovery)
   - [Create Redis Cluster with password](#create-redis-cluster-with-password)
@@ -36,6 +35,7 @@ with different k8s nodes as master.
   - [Custom Configuration](#custom-configuration)
   - [Custom Service](#custom-service)
   - [Custom Resource](#custom-resource)
+  - [Cluster Cleanup Job](#cluster-cleanup-job)
 - [Contributing](#contributing)
 - [End to End Tests](#end-to-end-tests)
 
@@ -215,10 +215,7 @@ spec:
   image: redis:5.0.4-alpine
 ```
 
-#### Create Cleanup Job
-```
-$ kubectl create -f config/samples/example/cleanup/cleanup-job.yaml
-```
+
 
 
 #### Backup and Restore
@@ -270,6 +267,28 @@ $ kubectl create -f config/samples/example/custom-service.yaml
 ```
 $ kubectl create -f config/samples/example/custom-resources.yaml
 ```
+
+#### Cluster Cleanup Job
+
+##### RedisClusterCleanup CRD
+- **Purpose:**  
+  Defines the cleanup job configuration for Redis clusters.
+- **Key Fields:**
+  - **Namespaces:** List of namespaces to target for cleanup.
+  - **Schedule:** Cron schedule determining when the cleanup job runs.
+  - **KeyPatterns:** Patterns used to identify keys eligible for inspection.
+  - **ExpirationRegexes:** List of regex strings to extract expiration timestamps from key values.
+  - **SkipPatterns:** Patterns that, if present in a key's value, will cause the key to be skipped.
+  - **ScanBatchSize:** Number of keys to scan in one batch.
+  - **ExpiredThreshold:** Minimum count of expired keys that triggers batch deletion.
+  - **Suspend:** Boolean flag to temporarily disable the cleanup job.
+
+##### Create Cleanup Job
+```
+$ kubectl create -f config/samples/redis_v1alpha1_redisclustercleanup.yaml
+```
+
+
 
 ## Contributing
 
