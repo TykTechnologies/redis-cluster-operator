@@ -6,12 +6,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+...
 */
 
 package redisclustercleanup
@@ -50,7 +45,6 @@ type RedisClusterCleanupReconciler struct {
 
 // NewReconcileRedisClusterCleanup creates a new instance of the reconciler.
 func NewReconcileRedisClusterCleanup(mgr ctrl.Manager) *RedisClusterCleanupReconciler {
-	// If your direct client is needed, you can create it here (or use mgr.GetClient()).
 	return &RedisClusterCleanupReconciler{
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
@@ -63,18 +57,10 @@ func NewReconcileRedisClusterCleanup(mgr ctrl.Manager) *RedisClusterCleanupRecon
 // +kubebuilder:rbac:groups=redis.kun,resources=redisclustercleanups/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=redis.kun,resources=redisclustercleanups/finalizers,verbs=update
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the RedisClusterCleanup object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("Request.Namespace", req.Namespace, "Request.Name", req.Name)
 
+	// Fetch the RedisClusterCleanup custom resource.
 	redisClusterCleanup := &redisv1alpha1.RedisClusterCleanup{}
 	if err := r.Get(ctx, req.NamespacedName, redisClusterCleanup); err != nil {
 		logger.Info("Failed to get RedisClusterCleanup", "error", err.Error())
@@ -82,105 +68,113 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 
 	if redisClusterCleanup.Spec.Suspend {
-		logger.Info("RedisClusterCleanup suspend, skipping ...")
+		logger.Info("RedisClusterCleanup suspended, skipping ...")
 		return ctrl.Result{}, nil
 	}
 
+	// List DistributedRedisClusters. Note: Adjust the listing logic if you require filtering across multiple namespaces.
 	distributedRedisClusters := redisv1alpha1.DistributedRedisClusterList{}
-
-	// Create the ListOptions with the filter for namespaces
 	listOptions := &client.ListOptions{
-		Namespace: strings.Join(redisClusterCleanup.Spec.Namespaces, ","), // You can join the namespaces with commas
+		Namespace: strings.Join(redisClusterCleanup.Spec.Namespaces, ","),
 	}
-
 	if err := r.List(ctx, &distributedRedisClusters, listOptions); err != nil {
 		logger.Info("Failed to list DistributedRedisClusters", "error", err.Error())
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, client.IgnoreNotFound(err)
 	}
 
+	// Update the last schedule time.
 	redisClusterCleanup.Status.LastScheduleTime = &metav1.Time{Time: time.Now()}
 	if err := r.crController.UpdateCRStatus(redisClusterCleanup); err != nil {
-		logger.Error(err, "Failed to update the status", "redisClusterCleanup", redisClusterCleanup)
+		logger.Error(err, "Failed to update status", "redisClusterCleanup", redisClusterCleanup)
 	}
 
+	// Semaphore to limit concurrent cluster processing to 5 at a time.
+	semaphore := make(chan struct{}, 5)
+	var wgClusters sync.WaitGroup
+
+	// Process each cluster.
 	for _, distributedRedisCluster := range distributedRedisClusters.Items {
-		logger.V(3).Info("Checking for expired keys", "cluster", distributedRedisCluster.Name)
-		if distributedRedisCluster.Status.Status != redisv1alpha1.ClusterStatusOK {
-			logger.Info("Skip the cluster since its status is not healthy ", "cluster",
-				distributedRedisCluster.Name, "status", distributedRedisCluster.Status.Status,
-				"Namespace", distributedRedisCluster.Namespace)
-			continue
-		}
-		masterNum := int(distributedRedisCluster.Spec.MasterSize)
-		redisHosts := []string{}
-		for _, node := range distributedRedisCluster.Status.Nodes {
-			if node.Role == redisv1alpha1.RedisClusterNodeRoleMaster {
-				redisHosts = append(redisHosts, node.IP)
-				// Optional: Stop when you've collected the expected number of masters.
-				if len(redisHosts) == masterNum {
-					break
+		// Acquire a semaphore token.
+		semaphore <- struct{}{}
+		wgClusters.Add(1)
+
+		// Process each cluster concurrently.
+		go func(cluster redisv1alpha1.DistributedRedisCluster) {
+			defer wgClusters.Done()
+			defer func() { <-semaphore }() // Release the semaphore slot.
+
+			// Only process healthy clusters.
+			if cluster.Status.Status != redisv1alpha1.ClusterStatusOK {
+				logger.Info("Skipping unhealthy cluster", "cluster", cluster.Name, "status", cluster.Status.Status)
+				return
+			}
+
+			// Collect master node IPs up to the specified master count.
+			masterNum := int(cluster.Spec.MasterSize)
+			var redisHosts []string
+			for _, node := range cluster.Status.Nodes {
+				if node.Role == redisv1alpha1.RedisClusterNodeRoleMaster {
+					redisHosts = append(redisHosts, node.IP)
+					if len(redisHosts) == masterNum {
+						break
+					}
 				}
 			}
-		}
 
-		// Read the secret containing the Redis password.
-		// Ensure you are referencing the correct namespace where the secret exists.
-		secret := &corev1.Secret{}
-		secretName := types.NamespacedName{
-			Namespace: distributedRedisCluster.Namespace, // adjust if the secret is in a different namespace
-			Name:      distributedRedisCluster.Spec.PasswordSecret.Name,
-		}
-		if err := r.Get(ctx, secretName, secret); err != nil {
-			logger.Error(err, "Failed to get secret", "secret", secretName)
-			continue // or handle the error as appropriate for your use case
-		}
-
-		passwordBytes, exists := secret.Data["password"]
-		if !exists {
-			logger.Error(nil, "Password key not found in secret", "secret", secretName)
-			continue // or handle the missing key error appropriately
-		}
-
-		redisPassword := string(passwordBytes)
-		logger.V(3).Info("Successfully retrieved Redis password", "cluster", distributedRedisCluster.Name)
-
-		logger.Info("Cleaning", "DRC namespace", distributedRedisCluster.Namespace, "DRC name", distributedRedisCluster.Name)
-
-		var wg sync.WaitGroup
-		// Create a goroutine for each host.
-		for _, host := range redisHosts {
-			host = strings.TrimSpace(host)
-			if host == "" {
-				continue
+			// Retrieve the secret containing the Redis password.
+			secret := &corev1.Secret{}
+			secretName := types.NamespacedName{
+				Namespace: cluster.Namespace, // adjust if secret is in a different namespace
+				Name:      cluster.Spec.PasswordSecret.Name,
 			}
-			wg.Add(1)
-			go func(host string) {
-				defer wg.Done()
-				processHost(host, "6379", redisPassword, redisClusterCleanup.Spec, logger)
-			}(host)
-		}
-		wg.Wait()
-	}
+			if err := r.Get(ctx, secretName, secret); err != nil {
+				logger.Error(err, "Failed to get secret", "secret", secretName)
+				return
+			}
 
+			passwordBytes, exists := secret.Data["password"]
+			if !exists {
+				logger.Error(nil, "Password key not found in secret", "secret", secretName)
+				return
+			}
+			redisPassword := string(passwordBytes)
+			logger.V(3).Info("Successfully retrieved Redis password", "cluster", cluster.Name)
+
+			logger.Info("Cleaning cluster", "Namespace", cluster.Namespace, "Name", cluster.Name)
+
+			// Process each host concurrently within this cluster.
+			var wgHosts sync.WaitGroup
+			for _, host := range redisHosts {
+				host = strings.TrimSpace(host)
+				if host == "" {
+					continue
+				}
+				wgHosts.Add(1)
+				go func(host string) {
+					defer wgHosts.Done()
+					// processHost is your function that handles the individual host cleanup.
+					processHost(host, "6379", redisPassword, redisClusterCleanup.Spec, logger)
+				}(host)
+			}
+			wgHosts.Wait()
+		}(distributedRedisCluster)
+	}
+	wgClusters.Wait()
+
+	// Update the status after successful processing.
 	redisClusterCleanup.Status.LastSuccessfulTime = &metav1.Time{Time: time.Now()}
 	redisClusterCleanup.Status.Succeed += 1
 	if err := r.crController.UpdateCRStatus(redisClusterCleanup); err != nil {
-		logger.Error(err, "Failed to update the status", "redisClusterCleanup", redisClusterCleanup)
+		logger.Error(err, "Failed to update status", "redisClusterCleanup", redisClusterCleanup)
 	}
 
-	// Parse the cron schedule from your custom resource field
-	scheduleStr := redisClusterCleanup.Spec.Schedule
-	// Create a parser that understands the standard 5-field cron syntax.
-	// If your schedule uses seconds, adjust the parser flags accordingly.
+	// Parse the cron schedule to determine when to requeue.
 	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
-	sched, err := parser.Parse(scheduleStr)
+	sched, err := parser.Parse(redisClusterCleanup.Spec.Schedule)
 	if err != nil {
-		logger.Error(err, "Failed to parse cron schedule", "schedule", scheduleStr)
-		// Return a default requeue interval if schedule parsing fails
+		logger.Error(err, "Failed to parse cron schedule", "schedule", redisClusterCleanup.Spec.Schedule)
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
-
-	// Calculate the duration until the next scheduled time
 	now := time.Now()
 	nextRun := sched.Next(now)
 	durationUntilNext := nextRun.Sub(now)
@@ -191,15 +185,11 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *RedisClusterCleanupReconciler) SetupWithManager(mgr ctrl.Manager) error {
-
 	pred := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-
 			r.Log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).V(5).Info("Call UpdateFunc")
-			// Ignore updates to CR status in which case metadata.Generation does not change
 			if e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration() {
-				r.Log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).Info("Generation change return true",
-					"old", e.ObjectOld, "new", e.ObjectNew)
+				r.Log.WithValues("namespace", e.ObjectNew.GetNamespace(), "name", e.ObjectNew.GetName()).Info("Generation changed, processing update")
 				return true
 			}
 			return false
