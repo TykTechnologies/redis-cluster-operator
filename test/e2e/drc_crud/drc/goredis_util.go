@@ -2,6 +2,7 @@ package drc
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -41,20 +42,39 @@ func (g *GoRedis) StuffingData(round, n int) error {
 
 	var group errgroup.Group
 	for i := 0; i < round; i++ {
+		// Capture the current value of i for the goroutine.
+		i := i
 		group.Go(func() error {
+			// Expired timestamp: 1 hour ago.
+			expiredTime := time.Now().Unix() - 3600
+			// Future timestamp: 1 hour from now.
+			futureTime := time.Now().Unix() + 3600
+
 			for j := 0; j < n; j++ {
-				key := uuid.NewV4().String()
-				if err := g.client.Set(ctx, key, key, 0).Err(); err != nil {
+				// Generate key with a round number and a new UUID.
+				key := fmt.Sprintf("apikey-%s-%d", uuid.NewV4().String(), i)
+				var value string
+				// 5 and 8 are random numbers.
+				// 400 keys with a future expiration timestamp.
+				// 200 keys with a dummy session and an expired timestamp.
+				// 1400 keys with just an expired timestamp.
+				if j%5 == 0 {
+					value = fmt.Sprintf("{\"expires\": %d}", futureTime)
+				} else if j%8 == 0 && j%5 != 0 {
+					// Use a dummy session and an expired timestamp.
+					value = fmt.Sprintf("{\"TykJWTSessionID\": \"dummy-session\", \"expires\": %d}", expiredTime)
+				} else {
+					value = fmt.Sprintf("{\"expires\": %d}", expiredTime)
+				}
+
+				if err := g.client.Set(ctx, key, value, 0).Err(); err != nil {
 					return err
 				}
 			}
 			return nil
 		})
 	}
-	if err := group.Wait(); err != nil {
-		return err
-	}
-	return nil
+	return group.Wait()
 }
 
 // DBSize return DBsize of all master nodes.

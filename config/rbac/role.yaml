@@ -82,6 +82,7 @@ rules:
   resources:
   - distributedredisclusters
   - redisclusterbackups
+  - redisclustercleanups
   verbs:
   - create
   - delete
@@ -95,6 +96,7 @@ rules:
   resources:
   - distributedredisclusters/finalizers
   - redisclusterbackups/finalizers
+  - redisclustercleanups/finalizers
   verbs:
   - update
 - apiGroups:
@@ -102,6 +104,7 @@ rules:
   resources:
   - distributedredisclusters/status
   - redisclusterbackups/status
+  - redisclustercleanups/status
   verbs:
   - get
   - patch

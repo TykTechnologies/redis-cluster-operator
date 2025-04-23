@@ -136,5 +136,24 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
 		})
+		Context("when the DistributedRedisCluster has passed all tests", func() {
+			It("should create a RedisClusterCleanup", func() {
+				time.Sleep(30 * time.Second)
+				name := utils.RandString(8)
+				drccleanup := drctest.NewRedisClusterCleanup(name, drc)
+				Ω(f.CreateRedisClusterCleaup(drccleanup)).Should(Succeed())
+				// Sleep to allow DRC time to stabilize after creation
+				time.Sleep(60 * time.Second)
+
+				Eventually(drctest.IsRedisClusterCleanupProperly(f, drccleanup), "15m", "10s").ShouldNot(HaveOccurred())
+
+				time.Sleep(30 * time.Second)
+
+				goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
+				// we keep non exipired keys and the keys with skip pattern
+				Expect(drctest.IsDBSizeConsistent(1800, goredis)).NotTo(HaveOccurred())
+			})
+		})
+
 	})
 })
