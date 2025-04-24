@@ -15,6 +15,6 @@ spec:
   keyPatterns:
     - "apikey-*"
   expirationRegexes:
-    - "\"expires\":\\s*(\\d+)"    # Regex to extract the expiration timestamp from key values.
+    - '"expires":\s*(\d+)'    # Regex to extract the expiration timestamp from key values.
   skipPatterns:
     - "TykJWTSessionID"       # Keys containing this string will be skipped.

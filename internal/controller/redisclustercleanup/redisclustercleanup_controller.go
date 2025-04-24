@@ -72,15 +72,20 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 		return ctrl.Result{}, nil
 	}
 
-	// List DistributedRedisClusters. Note: Adjust the listing logic if you require filtering across multiple namespaces.
-	distributedRedisClusters := redisv1alpha1.DistributedRedisClusterList{}
-	listOptions := &client.ListOptions{
-		Namespace: strings.Join(redisClusterCleanup.Spec.Namespaces, ","),
+	// List DistributedRedisClusters across all specified namespaces.
+	var distributedRedisClusters redisv1alpha1.DistributedRedisClusterList
+	for _, ns := range redisClusterCleanup.Spec.Namespaces {
+		tmp := &redisv1alpha1.DistributedRedisClusterList{}
+		opts := &client.ListOptions{Namespace: ns}
+		if err := r.List(ctx, tmp, opts); err != nil {
+			logger.Error(err, "Failed to list DistributedRedisClusters", "namespace", ns)
+			continue
+		}
+		// append everything we found in this namespace
+		distributedRedisClusters.Items = append(distributedRedisClusters.Items, tmp.Items...)
 	}
-	if err := r.List(ctx, &distributedRedisClusters, listOptions); err != nil {
-		logger.Info("Failed to list DistributedRedisClusters", "error", err.Error())
-		return ctrl.Result{RequeueAfter: 10 * time.Second}, client.IgnoreNotFound(err)
-	}
+	logger.Info("Aggregated clusters", "total", len(distributedRedisClusters.Items))
+
 
 	// Update the last schedule time.
 	redisClusterCleanup.Status.LastScheduleTime = &metav1.Time{Time: time.Now()}

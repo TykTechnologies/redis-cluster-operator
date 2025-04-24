@@ -16,6 +16,7 @@ import (
 
 // processHost connects to the given Redis host and cleans up expired keys.
 func processHost(host, port, password string, spec v1alpha1.RedisClusterCleanupSpec, logger logr.Logger) {
+	logger.Info("processing", "host", host, "port", port)
 	ctx := context.Background()
 	addr := host + ":" + port
 
