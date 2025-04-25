@@ -64,7 +64,7 @@ func (r *RedisClusterCleanupReconciler) Reconcile(ctx context.Context, req ctrl.
 	redisClusterCleanup := &redisv1alpha1.RedisClusterCleanup{}
 	if err := r.Get(ctx, req.NamespacedName, redisClusterCleanup); err != nil {
 		logger.Info("Failed to get RedisClusterCleanup", "error", err.Error())
-		return ctrl.Result{RequeueAfter: 10 * time.Second}, client.IgnoreNotFound(err)
+		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	if redisClusterCleanup.Spec.Suspend {
