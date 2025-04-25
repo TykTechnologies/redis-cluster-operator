@@ -16,6 +16,7 @@ import (
 
 // processHost connects to the given Redis host and cleans up expired keys.
 func processHost(host, port, password string, spec v1alpha1.RedisClusterCleanupSpec, logger logr.Logger) {
+	logger.Info("processing", "host", host, "port", port)
 	ctx := context.Background()
 	addr := host + ":" + port
 
@@ -25,6 +26,11 @@ func processHost(host, port, password string, spec v1alpha1.RedisClusterCleanupS
 		Password: password,
 		DB:       0,
 	})
+	defer func() {
+		if err := client.Close(); err != nil {
+			logger.Error(err, "Error closing Redis client", "node", addr)
+		}
+	}()
 
 	cleanupTriggered := false
 	// Pre-compile expiration regexes provided in the spec.
