@@ -54,7 +54,7 @@ func (g *GoRedis) StuffingData(round, n int) error {
 				// Generate key with a round number and a new UUID.
 				key := fmt.Sprintf("apikey-%s-%d", uuid.NewV4().String(), i)
 				var value string
-				// 5 and 8 are random numbers.
+				// 5 and 8 are random numbers. if n is 2000:
 				// 400 keys with a future expiration timestamp.
 				// 200 keys with a dummy session and an expired timestamp.
 				// 1400 keys with just an expired timestamp.
