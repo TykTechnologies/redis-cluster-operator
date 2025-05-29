@@ -33,7 +33,7 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 		time.Sleep(30 * time.Second)
 
 		goredis = drctest.NewGoRedisClient(name, f.Namespace(), password)
-		Expect(goredis.StuffingData(3, 20000)).NotTo(HaveOccurred())
+		Expect(goredis.StuffingData(3, 50000)).NotTo(HaveOccurred())
 		dbsize, err = goredis.DBSize()
 		Expect(err).NotTo(HaveOccurred())
 		f.Logf("%s DBSIZE: %d", name, dbsize)
@@ -177,7 +177,7 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 
 				goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 				// we keep non exipired keys and the keys with skip pattern
-				Expect(drctest.IsDBSizeConsistent(1800, goredis)).NotTo(HaveOccurred())
+				Expect(drctest.IsDBSizeConsistent(35000, goredis)).NotTo(HaveOccurred())
 			})
 		})
 
