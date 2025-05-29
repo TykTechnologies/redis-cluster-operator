@@ -33,7 +33,7 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 		time.Sleep(30 * time.Second)
 
 		goredis = drctest.NewGoRedisClient(name, f.Namespace(), password)
-		Expect(goredis.StuffingData(3, 2000)).NotTo(HaveOccurred())
+		Expect(goredis.StuffingData(3, 20000)).NotTo(HaveOccurred())
 		dbsize, err = goredis.DBSize()
 		Expect(err).NotTo(HaveOccurred())
 		f.Logf("%s DBSIZE: %d", name, dbsize)
