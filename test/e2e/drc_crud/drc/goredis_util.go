@@ -77,6 +77,28 @@ func (g *GoRedis) StuffingData(round, n int) error {
 	return group.Wait()
 }
 
+// PrintClusterState prints the Redis cluster nodes and info after scaling.
+func (g *GoRedis) PrintClusterState(scaledCount int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeOut)
+	defer cancel()
+
+	// Fetch CLUSTER NODES
+	nodes, err := g.client.ClusterNodes(ctx).Result()
+	if err != nil {
+		return fmt.Errorf("failed to fetch cluster nodes: %w", err)
+	}
+	fmt.Printf("\n=== After scaling to %d nodes: CLUSTER NODES ===\n%s\n", scaledCount, nodes)
+
+	// Fetch CLUSTER INFO
+	info, err := g.client.ClusterInfo(ctx).Result()
+	if err != nil {
+		return fmt.Errorf("failed to fetch cluster info: %w", err)
+	}
+	fmt.Printf("\n=== After scaling to %d nodes: CLUSTER INFO ===\n%s\n", scaledCount, info)
+
+	return nil
+}
+
 // DBSize return DBsize of all master nodes.
 func (g *GoRedis) DBSize() (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeOut)

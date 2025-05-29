@@ -302,8 +302,8 @@ func ChangeDRCRedisConfig(drc *redisv1alpha1.DistributedRedisCluster) {
 	drc.Spec.Config["maxclients"] = "105"
 }
 
-func ScaleUPDRC(drc *redisv1alpha1.DistributedRedisCluster) {
-	drc.Spec.MasterSize = 4
+func ScaleUPDRC(drc *redisv1alpha1.DistributedRedisCluster, replicas int32) {
+	drc.Spec.MasterSize = replicas
 }
 
 func ScaleUPDown(drc *redisv1alpha1.DistributedRedisCluster) {
