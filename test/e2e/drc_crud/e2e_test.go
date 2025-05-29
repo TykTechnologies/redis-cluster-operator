@@ -122,6 +122,8 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 
 				goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 				Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+
+				goredis.PrintClusterState(3)
 			})
 		})
 		It("should reset the DistributedRedisCluster password", func() {
