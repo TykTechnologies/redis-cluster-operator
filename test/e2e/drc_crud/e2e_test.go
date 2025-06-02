@@ -33,7 +33,7 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 		time.Sleep(30 * time.Second)
 
 		goredis = drctest.NewGoRedisClient(name, f.Namespace(), password)
-		Expect(goredis.StuffingData(3, 2000)).NotTo(HaveOccurred())
+		Expect(goredis.StuffingData(3, 50000)).NotTo(HaveOccurred())
 		dbsize, err = goredis.DBSize()
 		Expect(err).NotTo(HaveOccurred())
 		f.Logf("%s DBSIZE: %d", name, dbsize)
@@ -63,10 +63,10 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
 		})
-		It("should scale up a DistributedRedisCluster", func() {
+		It("should scale up a DistributedRedisCluster to 4", func() {
 			// Sleep to give time for DRC to stabilize before scaling
 			time.Sleep(30 * time.Second)
-			drctest.ScaleUPDRC(drc)
+			drctest.ScaleUPDRC(drc, 4)
 			Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
 
 			// Sleep to allow time for cluster scaling
@@ -79,6 +79,30 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 
 			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+
+			// **print cluster nodes & status**
+			goredis.PrintClusterState(4)
+
+		})
+		It("should scale up a DistributedRedisCluster to 5", func() {
+			// Sleep to give time for DRC to stabilize before scaling
+			time.Sleep(30 * time.Second)
+			drctest.ScaleUPDRC(drc, 5)
+			Ω(f.UpdateRedisCluster(drc)).Should(Succeed())
+
+			// Sleep to allow time for cluster scaling
+			time.Sleep(60 * time.Second)
+
+			Eventually(drctest.IsDistributedRedisClusterProperly(f, drc), "15m", "10s").ShouldNot(HaveOccurred())
+
+			// Sleep to allow time for a DB client to stabilize after scaling
+			time.Sleep(30 * time.Second)
+
+			goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
+			Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+
+			// **print cluster nodes & status**
+			goredis.PrintClusterState(5)
 		})
 		Context("when the scale up succeeded", func() {
 			It("should scale down a DistributedRedisCluster", func() {
@@ -98,6 +122,8 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 
 				goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 				Expect(drctest.IsDBSizeConsistent(dbsize, goredis)).NotTo(HaveOccurred())
+
+				goredis.PrintClusterState(3)
 			})
 		})
 		It("should reset the DistributedRedisCluster password", func() {
@@ -151,7 +177,7 @@ var _ = Describe("DistributedRedisCluster CRUD", Ordered, func() {
 
 				goredis = drctest.NewGoRedisClient(drc.Name, f.Namespace(), goredis.Password())
 				// we keep non exipired keys and the keys with skip pattern
-				Expect(drctest.IsDBSizeConsistent(1800, goredis)).NotTo(HaveOccurred())
+				Expect(drctest.IsDBSizeConsistent(45000, goredis)).NotTo(HaveOccurred())
 			})
 		})
 

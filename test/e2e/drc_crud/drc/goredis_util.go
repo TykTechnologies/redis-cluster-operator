@@ -54,7 +54,7 @@ func (g *GoRedis) StuffingData(round, n int) error {
 				// Generate key with a round number and a new UUID.
 				key := fmt.Sprintf("apikey-%s-%d", uuid.NewV4().String(), i)
 				var value string
-				// 5 and 8 are random numbers.
+				// 5 and 8 are random numbers. if n is 2000:
 				// 400 keys with a future expiration timestamp.
 				// 200 keys with a dummy session and an expired timestamp.
 				// 1400 keys with just an expired timestamp.
@@ -75,6 +75,28 @@ func (g *GoRedis) StuffingData(round, n int) error {
 		})
 	}
 	return group.Wait()
+}
+
+// PrintClusterState prints the Redis cluster nodes and info after scaling.
+func (g *GoRedis) PrintClusterState(scaledCount int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeOut)
+	defer cancel()
+
+	// Fetch CLUSTER NODES
+	nodes, err := g.client.ClusterNodes(ctx).Result()
+	if err != nil {
+		return fmt.Errorf("failed to fetch cluster nodes: %w", err)
+	}
+	fmt.Printf("\n=== After scaling to %d nodes: CLUSTER NODES ===\n%s\n", scaledCount, nodes)
+
+	// Fetch CLUSTER INFO
+	info, err := g.client.ClusterInfo(ctx).Result()
+	if err != nil {
+		return fmt.Errorf("failed to fetch cluster info: %w", err)
+	}
+	fmt.Printf("\n=== After scaling to %d nodes: CLUSTER INFO ===\n%s\n", scaledCount, info)
+
+	return nil
 }
 
 // DBSize return DBsize of all master nodes.
